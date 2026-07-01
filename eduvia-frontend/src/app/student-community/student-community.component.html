@@ -1,0 +1,35 @@
+<section class="student-page">
+  <header class="page-header">
+    <p class="eyebrow">Student</p>
+    <h1>Clubs & Events</h1>
+    <p>Explore clubs and upcoming events for your learning community.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading clubs and events...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+  <section class="grid" *ngIf="!isLoading">
+    <article class="card">
+      <h2>Clubs</h2>
+      <div *ngIf="!clubs.length" class="muted">No clubs available yet.</div>
+      <div class="item" *ngFor="let club of clubs">
+        <h3>{{ club.name }}</h3>
+        <p>{{ club.description || 'No description available.' }}</p>
+        <small>Members: {{ club.memberCount }} | Category: {{ club.category || 'General' }}</small>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>Events</h2>
+      <div *ngIf="!events.length" class="muted">No events available yet.</div>
+      <div class="item" *ngFor="let event of events">
+        <h3>{{ event.title }}</h3>
+        <p>{{ event.description || 'No description available.' }}</p>
+        <small>
+          {{ event.startDate | date: 'mediumDate' }}
+          <span *ngIf="event.location"> | {{ event.location }}</span>
+        </small>
+      </div>
+    </article>
+  </section>
+</section>

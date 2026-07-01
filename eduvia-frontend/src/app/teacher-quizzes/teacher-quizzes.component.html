@@ -1,0 +1,60 @@
+<section class="teacher-page">
+  <header class="page-header">
+    <p class="eyebrow">Teacher</p>
+    <h1>Quiz Management</h1>
+    <p>Create quizzes and review student attempts.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading quiz data...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="status success">{{ successMessage }}</div>
+
+  <section class="editor card">
+    <h2>Create Quiz</h2>
+    <input [(ngModel)]="form.title" placeholder="Quiz title" />
+    <textarea [(ngModel)]="form.description" placeholder="Quiz description"></textarea>
+
+    <select [(ngModel)]="form.courseId">
+      <option value="" disabled>Select course</option>
+      <option *ngFor="let course of courses" [value]="course._id">{{ course.title }}</option>
+    </select>
+
+    <div class="inline-grid">
+      <input [(ngModel)]="form.level" placeholder="Level" />
+      <input [(ngModel)]="form.subject" placeholder="Subject" />
+      <input [(ngModel)]="form.timeLimitMinutes" type="number" min="1" placeholder="Time limit" />
+    </div>
+
+    <h3>First Question</h3>
+    <input [(ngModel)]="form.prompt" placeholder="Question prompt" />
+    <input [(ngModel)]="form.optionA" placeholder="Option A" />
+    <input [(ngModel)]="form.optionB" placeholder="Option B" />
+    <input [(ngModel)]="form.optionC" placeholder="Option C (optional)" />
+    <input [(ngModel)]="form.correctOption" type="number" min="0" placeholder="Correct option index" />
+    <input [(ngModel)]="form.explanation" placeholder="Explanation (optional)" />
+
+    <button type="button" (click)="createQuiz()" [disabled]="isSaving">
+      {{ isSaving ? 'Creating...' : 'Create Quiz' }}
+    </button>
+  </section>
+
+  <section class="list card">
+    <h2>Existing Quizzes</h2>
+    <div *ngIf="!quizzes.length" class="muted">No quizzes found.</div>
+    <article class="item" *ngFor="let quiz of quizzes">
+      <h3>{{ quiz.title }}</h3>
+      <p>{{ quiz.description || 'No description available.' }}</p>
+      <small>Questions: {{ quiz.questions.length }} | Published: {{ quiz.isPublished ? 'Yes' : 'No' }}</small>
+      <button type="button" (click)="viewAttempts(quiz)">View Attempts</button>
+    </article>
+  </section>
+
+  <section class="list card" *ngIf="selectedQuizTitle">
+    <h2>Attempts for {{ selectedQuizTitle }}</h2>
+    <div *ngIf="!selectedQuizAttempts.length" class="muted">No attempts yet.</div>
+    <article class="item" *ngFor="let attempt of selectedQuizAttempts">
+      <h3>{{ attempt.studentId?.name || 'Student' }}</h3>
+      <p>Score: {{ attempt.scorePercent }}% ({{ attempt.correctAnswers }}/{{ attempt.totalQuestions }})</p>
+    </article>
+  </section>
+</section>

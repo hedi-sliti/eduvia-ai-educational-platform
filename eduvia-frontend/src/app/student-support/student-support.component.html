@@ -1,0 +1,38 @@
+<section class="student-page">
+  <header class="page-header">
+    <p class="eyebrow">Student</p>
+    <h1>Reminders & Support</h1>
+    <p>View your reminders and support messages from teachers/admins.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading reminders and messages...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+  <section class="grid" *ngIf="!isLoading">
+    <article class="card">
+      <h2>My Reminders</h2>
+      <div *ngIf="!reminders.length" class="muted">No reminders yet.</div>
+      <div class="item" *ngFor="let reminder of reminders">
+        <h3>{{ reminder.title || 'Reminder' }}</h3>
+        <p>{{ reminder.message }}</p>
+        <small>Priority: {{ reminder.priority }}</small>
+        <button type="button" (click)="markReminderAsRead(reminder._id)" [disabled]="reminder.isRead">
+          {{ reminder.isRead ? 'Read' : 'Mark as Read' }}
+        </button>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>Support Messages</h2>
+      <div *ngIf="!messages.length" class="muted">No support messages yet.</div>
+      <div class="item" *ngFor="let message of messages">
+        <h3>{{ message.subject || 'Support Message' }}</h3>
+        <p>{{ message.message }}</p>
+        <small *ngIf="message.category">Category: {{ message.category }}</small>
+        <button type="button" (click)="markMessageAsRead(message._id)" [disabled]="message.isRead">
+          {{ message.isRead ? 'Read' : 'Mark as Read' }}
+        </button>
+      </div>
+    </article>
+  </section>
+</section>

@@ -1,0 +1,43 @@
+<section class="student-page">
+  <header class="page-header">
+    <p class="eyebrow">Student</p>
+    <h1>Recommendations</h1>
+    <p>Review your learning recommendations and suggested community activities.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading recommendations...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+  <section class="grid" *ngIf="!isLoading">
+    <article class="card">
+      <h2>Learning Recommendations</h2>
+      <div *ngIf="!learningRecommendations.length" class="muted">No learning recommendations yet.</div>
+      <div class="item" *ngFor="let item of learningRecommendations">
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.description || 'No description available.' }}</p>
+        <small>
+          <span *ngIf="item.type">{{ item.type }}</span>
+          <span *ngIf="item.priority"> | Priority {{ item.priority }}</span>
+        </small>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>Suggested Clubs</h2>
+      <div *ngIf="!communityClubs.length" class="muted">No suggested clubs yet.</div>
+      <div class="item" *ngFor="let club of communityClubs">
+        <h3>{{ club.name }}</h3>
+        <p>{{ club.description || 'No description available.' }}</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>Suggested Events</h2>
+      <div *ngIf="!communityEvents.length" class="muted">No suggested events yet.</div>
+      <div class="item" *ngFor="let event of communityEvents">
+        <h3>{{ event.title }}</h3>
+        <p>{{ event.description || 'No description available.' }}</p>
+      </div>
+    </article>
+  </section>
+</section>

@@ -1,0 +1,38 @@
+<section class="teacher-page">
+  <header class="page-header">
+    <p class="eyebrow">Teacher</p>
+    <h1>Student Progress & At-Risk</h1>
+    <p>Review at-risk learners and inspect detailed progress data.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading student progress...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+  <section class="card" *ngIf="!isLoading">
+    <h2>At-Risk Students</h2>
+    <div *ngIf="!atRiskStudents.length" class="muted">No at-risk students currently.</div>
+    <article class="item" *ngFor="let item of atRiskStudents">
+      <h3>{{ item.student.name }}</h3>
+      <p>{{ item.student.email }}</p>
+      <small>
+        Risk: {{ item.progress.riskLevel }} | Overall: {{ item.progress.overallScore ?? 'N/A' }}
+      </small>
+      <button type="button" (click)="viewStudentProgress(item)">View Detailed Progress</button>
+    </article>
+  </section>
+
+  <section class="card" *ngIf="selectedProgress">
+    <h2>Detailed Progress</h2>
+    <p class="muted">{{ selectedStudentLabel }}</p>
+    <div class="metrics">
+      <div><strong>Overall:</strong> {{ selectedProgress.overallScore ?? 'N/A' }}</div>
+      <div><strong>Assessments:</strong> {{ selectedProgress.assessmentCount }}</div>
+      <div><strong>Quiz Attempts:</strong> {{ selectedProgress.quizAttemptsCount }}</div>
+      <div><strong>Risk:</strong> {{ selectedProgress.riskLevel }}</div>
+    </div>
+    <h3>Recommendations</h3>
+    <ul>
+      <li *ngFor="let rec of selectedProgress.recommendations">{{ rec }}</li>
+    </ul>
+  </section>
+</section>

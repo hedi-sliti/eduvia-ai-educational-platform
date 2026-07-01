@@ -1,0 +1,43 @@
+<div class="dashboard">
+  <div class="dashboard-content">
+    <section class="dashboard-hero">
+      <div>
+        <p class="eyebrow">Admin workspace</p>
+        <h1>Welcome, {{ authService.currentUserValue?.name }}</h1>
+        <p>
+          Control users and analytics with live platform data from protected admin APIs.
+        </p>
+      </div>
+
+      <div class="hero-summary">
+        <span>Role</span>
+        <strong>{{ authService.currentUserValue?.role }}</strong>
+        <small>Presentation-ready</small>
+      </div>
+    </section>
+
+    <div *ngIf="isLoading" class="status loading">Loading admin summary...</div>
+    <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+    <div class="grid card-grid">
+      <button
+        type="button"
+        class="card"
+        *ngFor="let card of cards"
+        (click)="openRoute(card.route)"
+      >
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.description }}</p>
+        <strong class="card-value">{{ card.value }}</strong>
+      </button>
+    </div>
+
+    <section class="panel-card quick-links">
+      <h2>Admin Actions</h2>
+      <div class="quick-links-grid">
+        <button type="button" (click)="openRoute('/admin/users')">User Management</button>
+        <button type="button" (click)="openRoute('/admin/analytics')">Analytics Dashboard</button>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+<div class="knowledge-container">
+  <h2>Knowledge Base Management</h2>
+  <p class="page-intro">Upload and manage course PDFs used by the AI tutor.</p>
+
+  <section class="upload-panel">
+    <h3>Upload PDF</h3>
+    <input type="file" accept="application/pdf" (change)="onFileSelected($event)" />
+    <input type="text" [(ngModel)]="title" placeholder="Title / Topic / Course name" />
+    <input type="text" [(ngModel)]="level" placeholder="Level (optional)" />
+    <input type="text" [(ngModel)]="subjects" placeholder="Subjects (comma separated, optional)" />
+    <button type="button" (click)="uploadDocument()" [disabled]="isUploading || !selectedFile">
+      {{ isUploading ? 'Uploading...' : 'Upload PDF' }}
+    </button>
+  </section>
+
+  <div *ngIf="isLoading" class="status-message loading">Loading knowledge documents...</div>
+  <div *ngIf="errorMessage" class="status-message error">{{ errorMessage }}</div>
+  <div *ngIf="!isLoading && !errorMessage && successMessage" class="status-message success">{{ successMessage }}</div>
+
+  <div *ngIf="documents.length > 0" class="documents-grid">
+    <div *ngFor="let doc of documents" class="document-card">
+      <h3>{{ doc.title || doc.metadata?.title || 'Untitled PDF' }}</h3>
+      <p><strong>Filename:</strong> {{ doc.metadata?.original_filename || 'N/A' }}</p>
+      <p><strong>Level:</strong> {{ doc.metadata?.level || 'N/A' }}</p>
+      <p><strong>Subjects:</strong> {{ (doc.metadata?.subjects || []).join(', ') || 'N/A' }}</p>
+      <button type="button" class="danger" (click)="deleteDocument(doc.document_id)" [disabled]="isDeleting">
+        {{ isDeleting ? 'Deleting...' : 'Delete' }}
+      </button>
+    </div>
+  </div>
+  <div *ngIf="documents.length === 0" class="empty-state">
+    <p>No PDF documents uploaded yet.</p>
+  </div>
+</div>

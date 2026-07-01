@@ -1,0 +1,23 @@
+<section class="student-page">
+  <header class="page-header">
+    <p class="eyebrow">Student</p>
+    <h1>Quizzes</h1>
+    <p>Take course quizzes and track your latest score.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading quizzes...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+  <div class="grid" *ngIf="!isLoading && quizzes.length">
+    <article class="card" *ngFor="let quiz of quizzes">
+      <h2>{{ quiz.title }}</h2>
+      <p>{{ quiz.description || 'No description available.' }}</p>
+      <p><strong>Questions:</strong> {{ quiz.questions.length }}</p>
+      <p *ngIf="quiz.timeLimitMinutes"><strong>Time limit:</strong> {{ quiz.timeLimitMinutes }} mins</p>
+      <p><strong>Latest score:</strong> {{ getLatestScore(quiz._id) ?? 'No attempts yet' }}</p>
+      <a [routerLink]="['/student/quizzes', quiz._id, 'attempt']" class="attempt-link">Start Attempt</a>
+    </article>
+  </div>
+
+  <div *ngIf="!isLoading && !quizzes.length" class="status loading">No quizzes available yet.</div>
+</section>

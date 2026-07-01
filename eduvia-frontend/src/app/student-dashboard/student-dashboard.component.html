@@ -1,0 +1,56 @@
+<div class="dashboard">
+  <div class="dashboard-content">
+    <section class="dashboard-hero">
+      <div>
+        <p class="eyebrow">Student workspace</p>
+        <h1>Welcome, {{ authService.currentUserValue?.name }}</h1>
+        <p>
+          Use your student tools for progress tracking, quizzes, reminders, support messages, and community learning.
+        </p>
+      </div>
+
+      <div class="hero-summary">
+        <span>Role</span>
+        <strong>{{ authService.currentUserValue?.role }}</strong>
+        <small>Live data</small>
+      </div>
+    </section>
+
+    <div *ngIf="isLoading" class="status loading">Loading dashboard summary...</div>
+    <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+    <section class="summary-grid" *ngIf="!isLoading && !errorMessage">
+      <article class="summary-card">
+        <h3>Overall Score</h3>
+        <strong>{{ summary.overallScore ?? 'N/A' }}</strong>
+      </article>
+      <article class="summary-card">
+        <h3>Risk Level</h3>
+        <strong>{{ summary.riskLevel }}</strong>
+      </article>
+      <article class="summary-card">
+        <h3>Quiz Attempts</h3>
+        <strong>{{ summary.quizCount }}</strong>
+      </article>
+      <article class="summary-card">
+        <h3>Reminders</h3>
+        <strong>{{ summary.reminderCount }}</strong>
+      </article>
+      <article class="summary-card">
+        <h3>Messages</h3>
+        <strong>{{ summary.supportMessageCount }}</strong>
+      </article>
+      <article class="summary-card">
+        <h3>Community</h3>
+        <strong>{{ summary.clubCount }} clubs / {{ summary.eventCount }} events</strong>
+      </article>
+    </section>
+
+    <div class="grid card-grid">
+      <a *ngFor="let card of cards" [routerLink]="card.route" class="card" [ngClass]="card.title === 'Chatbot' ? 'primary-card' : ''">
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.description }}</p>
+      </a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<section class="teacher-page">
+  <header class="page-header">
+    <p class="eyebrow">Teacher</p>
+    <h1>Course Management</h1>
+    <p>Create, update, and delete courses from live backend data.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading courses...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="status success">{{ successMessage }}</div>
+
+  <section class="editor card">
+    <h2>{{ editingId ? 'Edit Course' : 'Add Course' }}</h2>
+    <input [(ngModel)]="form.title" placeholder="Title" />
+    <textarea [(ngModel)]="form.description" placeholder="Description"></textarea>
+    <input [(ngModel)]="form.subject" placeholder="Subject" />
+    <input [(ngModel)]="form.level" placeholder="Level" />
+    <input [(ngModel)]="form.contentUrl" placeholder="Content URL" />
+
+    <div class="actions">
+      <button type="button" (click)="saveCourse()" [disabled]="isSaving">
+        {{ isSaving ? 'Saving...' : (editingId ? 'Update Course' : 'Create Course') }}
+      </button>
+      <button type="button" class="secondary" (click)="resetForm()">Reset</button>
+    </div>
+  </section>
+
+  <section class="list card">
+    <h2>Existing Courses</h2>
+    <div *ngIf="!courses.length" class="muted">No courses found.</div>
+    <article class="item" *ngFor="let course of courses">
+      <h3>{{ course.title }}</h3>
+      <p>{{ course.description || 'No description available.' }}</p>
+      <small>{{ course.subject || 'General' }} | {{ course.level || 'N/A' }}</small>
+      <div class="actions">
+        <button type="button" (click)="editCourse(course)">Edit</button>
+        <button type="button" class="danger" (click)="deleteCourse(course._id)">Delete</button>
+      </div>
+    </article>
+  </section>
+</section>

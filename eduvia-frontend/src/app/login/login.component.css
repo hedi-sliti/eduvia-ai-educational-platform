@@ -1,0 +1,115 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 2rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 2.5rem;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: #4f46e5;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.login-card h1 {
+  text-align: center;
+  color: #0f172a;
+  margin: 0;
+  font-size: 2.2rem;
+}
+
+.login-card h2 {
+  text-align: center;
+  color: #475569;
+  margin: 0.35rem 0 0;
+}
+
+.lead {
+  text-align: center;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0.9rem 0 1.75rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 14px;
+  font-size: 1rem;
+  background: #fff;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+}
+
+button {
+  width: 100%;
+  padding: 0.95rem;
+  background: linear-gradient(135deg, #667eea 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.22);
+}
+
+.error-message {
+  color: #dc2626;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.test-accounts {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.test-accounts p {
+  margin: 0.25rem 0;
+}

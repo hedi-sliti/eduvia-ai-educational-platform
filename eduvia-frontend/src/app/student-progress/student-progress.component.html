@@ -1,0 +1,37 @@
+<section class="student-page">
+  <header class="page-header">
+    <p class="eyebrow">Student</p>
+    <h1>My Progress</h1>
+    <p>Track your assessment results, quiz performance, and current risk level.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading progress...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+  <div *ngIf="!isLoading && progress" class="grid">
+    <article class="card">
+      <h2>Overall Score</h2>
+      <strong>{{ progress.overallScore ?? 'N/A' }}</strong>
+      <p>Risk level: <span class="risk">{{ progress.riskLevel }}</span></p>
+    </article>
+
+    <article class="card">
+      <h2>Assessments</h2>
+      <strong>{{ progress.assessmentCount }}</strong>
+      <p>Average score: {{ progress.averageAssessmentScore ?? 'N/A' }}</p>
+    </article>
+
+    <article class="card">
+      <h2>Quizzes</h2>
+      <strong>{{ progress.quizAttemptsCount }}</strong>
+      <p>Average score: {{ progress.averageQuizScore ?? 'N/A' }}</p>
+    </article>
+
+    <article class="card full">
+      <h2>Recommendations</h2>
+      <ul>
+        <li *ngFor="let item of progress.recommendations">{{ item }}</li>
+      </ul>
+    </article>
+  </div>
+</section>

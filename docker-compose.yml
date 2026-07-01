@@ -1,0 +1,63 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: eduvia-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  ai-service:
+    build:
+      context: ./ai-chatbot-service
+    container_name: eduvia-ai-service
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=tinyllama
+      - CHROMA_PERSIST_DIRECTORY=./chroma_db
+    volumes:
+      - ./ai-chatbot-service/chroma_db:/app/chroma_db
+      - ./ai-chatbot-service/uploads:/app/uploads
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: eduvia-ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  backend:
+    build:
+      context: ./eduvia-backend
+    container_name: eduvia-backend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/eduvia
+      - PYTHON_AI_URL=http://ai-service:8000
+    depends_on:
+      - mongodb
+      - ai-service
+
+  frontend:
+    build:
+      context: ./eduvia-frontend
+    container_name: eduvia-frontend
+    restart: always
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
+  ollama_data:

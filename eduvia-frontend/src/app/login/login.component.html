@@ -1,0 +1,42 @@
+<div class="login-container">
+  <div class="login-card">
+    <p class="eyebrow">Secure platform access</p>
+    <h1>Eduvia</h1>
+    <h2>Sign In</h2>
+    <p class="lead">
+      Use the provided student, teacher, or admin account to access the role-based platform experience.
+    </p>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          required
+          placeholder="Enter your email"
+        />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          required
+          placeholder="Enter your password"
+        />
+      </div>
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <button type="submit" [disabled]="loginForm.invalid || isLoading">
+        {{ isLoading ? 'Signing In...' : 'Sign In' }}
+      </button>
+    </form>
+    <div class="test-accounts">
+      <p><strong>Test Accounts:</strong></p>
+      <p>Admin: admin&#64;eduvia.com / Admin123!</p>
+      <p>Teacher: teacher&#64;eduvia.com / Teacher123!</p>
+      <p>Student: student&#64;eduvia.com / Student123!</p>
+    </div>
+  </div>
+</div>

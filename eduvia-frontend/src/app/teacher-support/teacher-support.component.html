@@ -1,0 +1,56 @@
+<section class="teacher-page">
+  <header class="page-header">
+    <p class="eyebrow">Teacher</p>
+    <h1>Reminders & Support</h1>
+    <p>Send reminders/support and track sent communication.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading communication data...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="status success">{{ successMessage }}</div>
+
+  <section class="card">
+    <h2>Send Reminder</h2>
+    <input [(ngModel)]="reminderForm.studentId" placeholder="Student ID" />
+    <input [(ngModel)]="reminderForm.title" placeholder="Title" />
+    <textarea [(ngModel)]="reminderForm.message" placeholder="Reminder message"></textarea>
+    <div class="inline-grid">
+      <select [(ngModel)]="reminderForm.priority">
+        <option value="LOW">LOW</option>
+        <option value="MEDIUM">MEDIUM</option>
+        <option value="HIGH">HIGH</option>
+      </select>
+      <input [(ngModel)]="reminderForm.dueDate" type="date" />
+    </div>
+    <button type="button" (click)="sendReminder()">Send Reminder</button>
+  </section>
+
+  <section class="card">
+    <h2>Send Support Message</h2>
+    <input [(ngModel)]="supportForm.studentId" placeholder="Student ID" />
+    <input [(ngModel)]="supportForm.subject" placeholder="Subject" />
+    <textarea [(ngModel)]="supportForm.message" placeholder="Support message"></textarea>
+    <input [(ngModel)]="supportForm.category" placeholder="Category" />
+    <button type="button" (click)="sendSupportMessage()">Send Support</button>
+  </section>
+
+  <section class="card">
+    <h2>Sent Reminders</h2>
+    <div *ngIf="!sentReminders.length" class="muted">No reminders sent yet.</div>
+    <article class="item" *ngFor="let item of sentReminders">
+      <h3>{{ item.title || 'Reminder' }}</h3>
+      <p>{{ item.message }}</p>
+      <small>Student: {{ item.studentId?.name || item.studentId?._id || 'Unknown' }}</small>
+    </article>
+  </section>
+
+  <section class="card">
+    <h2>Sent Support Messages</h2>
+    <div *ngIf="!sentMessages.length" class="muted">No support messages sent yet.</div>
+    <article class="item" *ngFor="let item of sentMessages">
+      <h3>{{ item.subject || 'Support Message' }}</h3>
+      <p>{{ item.message }}</p>
+      <small>Student: {{ item.studentId?.name || item.studentId?._id || 'Unknown' }}</small>
+    </article>
+  </section>
+</section>

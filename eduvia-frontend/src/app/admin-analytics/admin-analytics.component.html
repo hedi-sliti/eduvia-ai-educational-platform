@@ -1,0 +1,46 @@
+<section class="admin-page">
+  <header class="page-header">
+    <p class="eyebrow">Admin</p>
+    <h1>Analytics</h1>
+    <p>Live metrics from all admin analytics endpoints.</p>
+  </header>
+
+  <div *ngIf="isLoading" class="status loading">Loading analytics...</div>
+  <div *ngIf="errorMessage" class="status error">{{ errorMessage }}</div>
+
+  <section class="card" *ngIf="overview">
+    <h2>/analytics/overview</h2>
+    <p><strong>Users:</strong> {{ overview.counts?.users }}</p>
+    <p><strong>Courses:</strong> {{ overview.counts?.courses }}</p>
+    <p><strong>Quizzes:</strong> {{ overview.counts?.quizzes }}</p>
+    <p><strong>Assessment Avg:</strong> {{ overview.averages?.assessmentScore ?? 'N/A' }}</p>
+    <p><strong>Quiz Avg:</strong> {{ overview.averages?.quizScore ?? 'N/A' }}</p>
+    <p><strong>Progress Avg:</strong> {{ overview.averages?.overallProgress ?? 'N/A' }}</p>
+  </section>
+
+  <section class="card" *ngIf="usersAnalytics">
+    <h2>/analytics/users</h2>
+    <p><strong>Total:</strong> {{ usersAnalytics.users?.total }}</p>
+    <p><strong>Students:</strong> {{ usersAnalytics.users?.students }}</p>
+    <p><strong>Teachers:</strong> {{ usersAnalytics.users?.teachers }}</p>
+    <p><strong>Admins:</strong> {{ usersAnalytics.users?.admins }}</p>
+  </section>
+
+  <section class="card" *ngIf="learningAnalytics">
+    <h2>/analytics/learning</h2>
+    <p><strong>Courses:</strong> {{ learningAnalytics.learning?.courses }}</p>
+    <p><strong>Quizzes:</strong> {{ learningAnalytics.learning?.quizzes }}</p>
+    <p><strong>Assessments:</strong> {{ learningAnalytics.learning?.assessments }}</p>
+    <p><strong>Quiz Attempts:</strong> {{ learningAnalytics.learning?.quizAttempts }}</p>
+    <p><strong>Recommendations:</strong> {{ learningAnalytics.learning?.recommendations }}</p>
+  </section>
+
+  <section class="card" *ngIf="engagementAnalytics">
+    <h2>/analytics/engagement</h2>
+    <p><strong>Clubs:</strong> {{ engagementAnalytics.engagement?.clubs }}</p>
+    <p><strong>Events:</strong> {{ engagementAnalytics.engagement?.events }}</p>
+    <p><strong>Reminders:</strong> {{ engagementAnalytics.engagement?.reminders }}</p>
+    <p><strong>Support Messages:</strong> {{ engagementAnalytics.engagement?.supportMessages }}</p>
+    <p><strong>Progress Records:</strong> {{ engagementAnalytics.engagement?.progressRecords }}</p>
+  </section>
+</section>

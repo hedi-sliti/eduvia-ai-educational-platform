@@ -1,0 +1,30 @@
+<div class="app-shell">
+  <header class="topbar">
+    <a routerLink="/" class="brand">
+      <span class="brand-mark">E</span>
+      <span class="brand-text">Eduvia</span>
+    </a>
+
+    <nav class="topbar-nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/chat" routerLinkActive="active">Chatbot</a>
+      <a routerLink="/student-dashboard" routerLinkActive="active">Student</a>
+      <a routerLink="/teacher-dashboard" routerLinkActive="active">Teacher</a>
+      <a routerLink="/admin-dashboard" routerLinkActive="active">Admin</a>
+    </nav>
+
+    <div class="topbar-actions" *ngIf="currentUser$ | async as user; else guestActions">
+      <span class="role-pill">{{ user.role }}</span>
+      <span class="user-name">{{ user.name }}</span>
+      <button type="button" class="logout-button" (click)="logout()">Logout</button>
+    </div>
+
+    <ng-template #guestActions>
+      <a routerLink="/login" class="login-link">Sign In</a>
+    </ng-template>
+  </header>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

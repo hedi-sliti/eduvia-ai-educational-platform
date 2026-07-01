@@ -1,0 +1,59 @@
+<section class="chat-page">
+  <header class="chat-hero">
+    <div>
+      <p class="eyebrow">Student assistant</p>
+      <h1>Chat with Eduvia AI</h1>
+      <p>
+        Ask a question and the local RAG pipeline will search the knowledge base, send the context through FastAPI,
+        and return an answer from Ollama.
+      </p>
+    </div>
+
+    <div class="suggestion-panel">
+      <h2>Suggested questions</h2>
+      <div class="suggestion-list">
+        <button
+          type="button"
+          class="suggestion-chip"
+          *ngFor="let question of suggestedQuestions"
+          (click)="askSuggestedQuestion(question)"
+        >
+          {{ question }}
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chat-container">
+    <div class="chat-messages">
+      <div
+        *ngFor="let message of messages"
+        class="message-row"
+        [ngClass]="message.isUser ? 'user-row' : 'bot-row'"
+      >
+        <div [ngClass]="message.isUser ? 'user-message' : 'bot-message'">
+          <span class="message-label">{{ message.isUser ? 'You' : 'Eduvia AI' }}</span>
+          <p>{{ message.text }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="loading-block">
+        <p>Eduvia AI is thinking...</p>
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <input
+        type="text"
+        [(ngModel)]="userInput"
+        (keyup.enter)="sendMessage()"
+        placeholder="Type your message..."
+        [disabled]="isLoading"
+      />
+      <button type="button" (click)="sendMessage()" [disabled]="isLoading">Send</button>
+    </div>
+  </section>
+</section>
