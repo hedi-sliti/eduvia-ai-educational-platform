@@ -142,6 +142,33 @@ export class ChatbotService {
     }
   }
 
+  async generateQuizFromPdf(payload: {
+    courseId: string;
+    documentId?: string;
+    filename?: string;
+    numberOfQuestions?: number;
+  }) {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(`${this.pythonAiUrl}/pdf/generate-quiz`, payload)
+      );
+      return response.data;
+    } catch (error: any) {
+      const upstreamStatus = error?.response?.status;
+      const upstreamData = error?.response?.data;
+      const safeMessage =
+        upstreamData?.detail ||
+        upstreamData?.message ||
+        error?.message ||
+        'Failed to generate quiz from PDF';
+
+      throw new HttpException(
+        upstreamData || { message: safeMessage },
+        upstreamStatus || HttpStatus.BAD_GATEWAY,
+      );
+    }
+  }
+
   async deletePdfDocument(documentId: string) {
     try {
       const response = await firstValueFrom(

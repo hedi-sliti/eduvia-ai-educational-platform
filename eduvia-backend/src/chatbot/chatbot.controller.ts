@@ -180,6 +180,16 @@ export class ChatbotController {
     return this.chatbotService.getPdfDocuments();
   }
 
+  @Post('pdf/generate-quiz')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  async generateQuizFromPdf(
+    @Body() body: { courseId: string; documentId?: string; filename?: string; numberOfQuestions?: number },
+  ) {
+    return this.chatbotService.generateQuizFromPdf(body);
+  }
+
   @Delete('pdf/documents/:documentId')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.TEACHER, UserRole.ADMIN)

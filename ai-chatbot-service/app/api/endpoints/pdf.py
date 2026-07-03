@@ -2,6 +2,8 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from typing import List, Dict, Any, Optional
 import os
+import json
+import re
 from pathlib import Path
 
 from app.services.pdf_service import pdf_service
@@ -11,7 +13,10 @@ from app.services.knowledge_service import delete_document_from_vectorstore
 from app.api.dependencies import get_current_user
 from app.core.exceptions import VectorStoreException, DatabaseException
 from app.core.logging import get_logger
-from pydantic import BaseModel
+from app.core.llm import get_llm
+from app.core.config import settings
+from langchain_core.prompts import PromptTemplate
+from pydantic import BaseModel, ConfigDict, Field
 
 logger = get_logger()
 
@@ -29,6 +34,118 @@ class ChatResponse(BaseModel):
     response: str
     sources: List[str]
     pdf_documents_used: int
+
+class GenerateQuizRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    course_id: str = Field(alias="courseId")
+    document_id: Optional[str] = Field(default=None, alias="documentId")
+    filename: Optional[str] = None
+    number_of_questions: int = Field(default=5, alias="numberOfQuestions")
+
+def _extract_json_payload(text: Any) -> Dict[str, Any]:
+    raw_text = str(text or "").strip()
+    raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text, flags=re.IGNORECASE)
+    raw_text = re.sub(r"\s*```$", "", raw_text)
+
+    candidates = [raw_text]
+    object_match = re.search(r"\{.*\}", raw_text, flags=re.DOTALL)
+    array_match = re.search(r"\[.*\]", raw_text, flags=re.DOTALL)
+    if object_match:
+        candidates.append(object_match.group(0))
+    if array_match:
+        candidates.append(array_match.group(0))
+
+    for candidate in candidates:
+        try:
+            parsed = json.loads(candidate)
+            if isinstance(parsed, list):
+                return {"questions": parsed}
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            continue
+
+    raise ValueError("AI response was not valid JSON")
+
+def _normalize_generated_questions(payload: Dict[str, Any], number_of_questions: int) -> List[Dict[str, Any]]:
+    raw_questions = payload.get("questions", [])
+    if not isinstance(raw_questions, list):
+        raise ValueError("JSON payload does not contain a questions list")
+
+    questions: List[Dict[str, Any]] = []
+    for item in raw_questions:
+        if not isinstance(item, dict):
+            continue
+
+        prompt = str(item.get("prompt") or item.get("question") or "").strip()
+        options = item.get("options") or []
+        if not isinstance(options, list):
+            continue
+        options = [str(option).strip() for option in options if str(option).strip()]
+
+        correct_option = item.get("correctOption", item.get("correct_option", item.get("answerIndex", 0)))
+        if isinstance(correct_option, str):
+            if correct_option.upper() in ["A", "B", "C", "D"]:
+                correct_option = ord(correct_option.upper()) - ord("A")
+            else:
+                try:
+                    correct_option = int(correct_option)
+                except ValueError:
+                    correct_option = 0
+
+        if prompt and len(options) == 4:
+            correct_option = int(correct_option or 0)
+            correct_option = max(0, min(correct_option, 3))
+            questions.append({
+                "prompt": prompt,
+                "options": options,
+                "correctOption": correct_option,
+                "explanation": str(item.get("explanation") or "").strip()
+            })
+
+        if len(questions) >= number_of_questions:
+            break
+
+    if not questions:
+        raise ValueError("No valid quiz questions were generated")
+
+    return questions
+
+def _fallback_questions_from_content(content: str, number_of_questions: int) -> List[Dict[str, Any]]:
+    sentences = [
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?])\s+", content)
+        if len(sentence.strip()) > 20
+    ]
+    key_sentences = sentences[:number_of_questions] or [content[:240].strip()]
+    if key_sentences:
+        while len(key_sentences) < number_of_questions:
+            key_sentences.append(key_sentences[len(key_sentences) % len(key_sentences)])
+    questions = []
+
+    for index, sentence in enumerate(key_sentences[:number_of_questions], start=1):
+        correct = sentence[:180].rstrip(".")
+        prompts = [
+            f"According to the selected PDF, which statement best matches key idea {index}?",
+            f"What does the selected PDF state about item {index}?",
+            f"Which answer is supported by the selected PDF for question {index}?",
+            f"Based on the selected PDF, what is the correct detail for item {index}?",
+            f"Which option accurately reflects the selected PDF for item {index}?",
+        ]
+        questions.append({
+            "prompt": prompts[(index - 1) % len(prompts)],
+            "options": [
+                correct,
+                "This topic is not discussed in the selected PDF",
+                "The selected PDF says the opposite of this idea",
+                "The selected PDF only covers administrative course details"
+            ],
+            "correctOption": 0,
+            "explanation": correct
+        })
+
+    return questions
 
 @router.post("/upload")
 async def upload_pdf(
@@ -120,6 +237,118 @@ async def upload_pdf(
     except Exception as e:
         logger.error(f"Unexpected error uploading PDF: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.post("/generate-quiz")
+async def generate_quiz_from_pdf(
+    request: GenerateQuizRequest,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Generate MCQ quiz questions from one selected course PDF."""
+    try:
+        number_of_questions = max(1, min(request.number_of_questions or 5, 10))
+
+        with DatabaseService() as db:
+            pdf_docs = db.get_pdf_documents()
+            selected_doc = None
+            for doc in pdf_docs:
+                metadata = doc.doc_metadata or {}
+                matches_document = request.document_id and doc.document_id == request.document_id
+                matches_filename = request.filename and metadata.get("original_filename") == request.filename
+                if matches_document or matches_filename:
+                    selected_doc = doc
+                    break
+
+            if not selected_doc:
+                raise HTTPException(status_code=404, detail="Selected PDF document was not found")
+
+            metadata = selected_doc.doc_metadata or {}
+            if metadata.get("course_id") != request.course_id:
+                raise HTTPException(status_code=400, detail="Selected PDF does not belong to the selected course")
+
+            content = (selected_doc.content or "").strip()
+            if not content:
+                raise HTTPException(status_code=400, detail="Selected PDF has no extractable text")
+
+            course_title = metadata.get("course_title") or "the selected course"
+            context = content[:10000]
+
+        prompt = PromptTemplate(
+            input_variables=["course_title", "document_title", "number_of_questions", "context"],
+            template="""You generate teacher-reviewable multiple choice quiz drafts from one uploaded course PDF.
+Use ONLY the PDF context below for course "{course_title}".
+Return STRICT JSON only. Do not include markdown, comments, or extra text.
+
+Required JSON shape:
+{{
+  "questions": [
+    {{
+      "prompt": "Question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctOption": 0,
+      "explanation": "Short explanation from the PDF"
+    }}
+  ]
+}}
+
+Rules:
+- Generate exactly {number_of_questions} questions.
+- Every question must have exactly 4 options.
+- correctOption must be the zero-based index of the right option.
+- Keep questions factual and answerable from this PDF only.
+
+PDF TITLE: {document_title}
+PDF CONTEXT:
+{context}
+"""
+        )
+
+        chain = prompt | get_llm()
+        try:
+            ai_response = chain.invoke({
+                "course_title": course_title,
+                "document_title": selected_doc.title,
+                "number_of_questions": number_of_questions,
+                "context": context
+            })
+        except Exception as e:
+            fallback_model = getattr(settings, "OLLAMA_FALLBACK_MODEL", None)
+            if not fallback_model:
+                raise
+            logger.warning(f"Primary quiz generation model failed ({e}); retrying with fallback '{fallback_model}'")
+            chain = prompt | get_llm(model_override=fallback_model)
+            ai_response = chain.invoke({
+                "course_title": course_title,
+                "document_title": selected_doc.title,
+                "number_of_questions": number_of_questions,
+                "context": context
+            })
+
+        try:
+            parsed = _extract_json_payload(ai_response)
+            questions = _normalize_generated_questions(parsed, number_of_questions)
+            if len(questions) < number_of_questions:
+                questions.extend(
+                    _fallback_questions_from_content(context, number_of_questions - len(questions))
+                )
+        except Exception as parse_error:
+            logger.warning(f"Invalid AI quiz JSON; using deterministic fallback: {parse_error}")
+            questions = _fallback_questions_from_content(context, number_of_questions)
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "courseId": request.course_id,
+                "courseTitle": course_title,
+                "documentId": selected_doc.document_id,
+                "documentTitle": selected_doc.title,
+                "questions": questions[:number_of_questions]
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating quiz from PDF: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to generate quiz questions")
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_pdfs(

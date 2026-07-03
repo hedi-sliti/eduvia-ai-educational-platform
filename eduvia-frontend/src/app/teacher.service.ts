@@ -32,6 +32,28 @@ export interface QuizItem {
   questions: QuizQuestionInput[];
 }
 
+export interface PdfDocumentItem {
+  id: string;
+  title: string;
+  document_id: string;
+  metadata: {
+    original_filename?: string;
+    course_id?: string;
+    course_title?: string;
+    level?: string;
+    subjects?: string[];
+  };
+  created_at?: string;
+}
+
+export interface GeneratedQuizResponse {
+  courseId: string;
+  courseTitle: string;
+  documentId: string;
+  documentTitle: string;
+  questions: QuizQuestionInput[];
+}
+
 export interface AtRiskStudentItem {
   student: {
     _id: string;
@@ -91,6 +113,18 @@ export class TeacherService {
 
   createQuiz(payload: any): Observable<QuizItem> {
     return this.http.post<QuizItem>(`${API_URL}/quizzes`, payload);
+  }
+
+  getPdfDocuments(): Observable<{ documents: PdfDocumentItem[]; count: number }> {
+    return this.http.get<{ documents: PdfDocumentItem[]; count: number }>(`${API_URL}/chatbot/pdf/documents`);
+  }
+
+  generateQuizFromPdf(payload: {
+    courseId: string;
+    documentId: string;
+    numberOfQuestions?: number;
+  }): Observable<GeneratedQuizResponse> {
+    return this.http.post<GeneratedQuizResponse>(`${API_URL}/chatbot/pdf/generate-quiz`, payload);
   }
 
   getQuizAttempts(quizId: string): Observable<any[]> {

@@ -14,15 +14,61 @@
     <input [(ngModel)]="form.title" placeholder="Quiz title" />
     <textarea [(ngModel)]="form.description" placeholder="Quiz description"></textarea>
 
-    <select [(ngModel)]="form.courseId">
+    <select [(ngModel)]="form.courseId" (ngModelChange)="onCourseChanged()">
       <option value="" disabled>Select course</option>
       <option *ngFor="let course of courses" [value]="course._id">{{ course.title }}</option>
     </select>
+
+    <div class="ai-generator">
+      <h3>Generate from Course PDF</h3>
+      <select [(ngModel)]="selectedDocumentId">
+        <option value="" disabled>Select a PDF</option>
+        <option *ngFor="let doc of filteredDocuments" [value]="doc.document_id">
+          {{ doc.title || doc.metadata.original_filename }}
+        </option>
+      </select>
+      <button type="button" (click)="generateQuizFromPdf()" [disabled]="isGenerating || !selectedDocumentId">
+        {{ isGenerating ? 'Generating...' : 'Generate Quiz' }}
+      </button>
+      <p class="muted" *ngIf="form.courseId && !filteredDocuments.length">
+        No PDFs are uploaded for this course yet.
+      </p>
+    </div>
 
     <div class="inline-grid">
       <input [(ngModel)]="form.level" placeholder="Level" />
       <input [(ngModel)]="form.subject" placeholder="Subject" />
       <input [(ngModel)]="form.timeLimitMinutes" type="number" min="1" placeholder="Time limit" />
+    </div>
+
+    <div class="generated-review" *ngIf="generatedQuestions.length">
+      <h3>Review Generated Questions</h3>
+      <article class="generated-question" *ngFor="let question of generatedQuestions; let questionIndex = index">
+        <label>
+          Question {{ questionIndex + 1 }}
+          <textarea [(ngModel)]="question.prompt"></textarea>
+        </label>
+
+        <div class="inline-grid">
+          <input
+            *ngFor="let option of question.options; let optionIndex = index"
+            [(ngModel)]="question.options[optionIndex]"
+            [placeholder]="'Option ' + (optionIndex + 1)"
+          />
+        </div>
+
+        <select [(ngModel)]="question.correctOption">
+          <option *ngFor="let option of question.options; let optionIndex = index" [ngValue]="optionIndex">
+            Correct: Option {{ optionIndex + 1 }}
+          </option>
+        </select>
+
+        <input [(ngModel)]="question.explanation" placeholder="Explanation (optional)" />
+      </article>
+
+      <button type="button" (click)="saveGeneratedQuiz()" [disabled]="isSaving">
+        {{ isSaving ? 'Saving...' : 'Save Generated Quiz' }}
+      </button>
     </div>
 
     <h3>First Question</h3>

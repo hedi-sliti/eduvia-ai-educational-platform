@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { finalize } from 'rxjs';
-import { CourseItem, QuizItem, TeacherService } from '../teacher.service';
+import {
+  CourseItem,
+  PdfDocumentItem,
+  QuizItem,
+  QuizQuestionInput,
+  TeacherService,
+} from '../teacher.service';
 
 @Component({
   selector: 'app-teacher-quizzes',
@@ -10,10 +16,14 @@ import { CourseItem, QuizItem, TeacherService } from '../teacher.service';
 export class TeacherQuizzesComponent implements OnInit {
   quizzes: QuizItem[] = [];
   courses: CourseItem[] = [];
+  pdfDocuments: PdfDocumentItem[] = [];
+  generatedQuestions: QuizQuestionInput[] = [];
   selectedQuizAttempts: any[] = [];
   selectedQuizTitle = '';
+  selectedDocumentId = '';
   isLoading = false;
   isSaving = false;
+  isGenerating = false;
   errorMessage = '';
   successMessage = '';
 
@@ -34,6 +44,14 @@ export class TeacherQuizzesComponent implements OnInit {
 
   constructor(private teacherService: TeacherService) {}
 
+  get filteredDocuments(): PdfDocumentItem[] {
+    if (!this.form.courseId) {
+      return this.pdfDocuments;
+    }
+
+    return this.pdfDocuments.filter((doc) => doc.metadata?.course_id === this.form.courseId);
+  }
+
   ngOnInit(): void {
     this.loadInitial();
   }
@@ -51,6 +69,7 @@ export class TeacherQuizzesComponent implements OnInit {
           if (courses.length && !this.form.courseId) {
             this.form.courseId = courses[0]._id;
           }
+          this.loadPdfDocuments();
           this.loadQuizzes();
         },
         error: () => {
@@ -68,6 +87,24 @@ export class TeacherQuizzesComponent implements OnInit {
         this.quizzes = [];
       },
     });
+  }
+
+  loadPdfDocuments(): void {
+    this.teacherService.getPdfDocuments().subscribe({
+      next: (data) => {
+        this.pdfDocuments = data.documents || [];
+        if (!this.selectedDocumentId && this.filteredDocuments.length) {
+          this.selectedDocumentId = this.filteredDocuments[0].document_id;
+        }
+      },
+      error: () => {
+        this.pdfDocuments = [];
+      },
+    });
+  }
+
+  onCourseChanged(): void {
+    this.selectedDocumentId = this.filteredDocuments[0]?.document_id || '';
   }
 
   createQuiz(): void {
@@ -118,6 +155,94 @@ export class TeacherQuizzesComponent implements OnInit {
       });
   }
 
+  generateQuizFromPdf(): void {
+    if (!this.form.courseId || !this.selectedDocumentId) {
+      this.errorMessage = 'Select a course PDF before generating a quiz.';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.generatedQuestions = [];
+    this.isGenerating = true;
+
+    this.teacherService
+      .generateQuizFromPdf({
+        courseId: this.form.courseId,
+        documentId: this.selectedDocumentId,
+        numberOfQuestions: 5,
+      })
+      .pipe(finalize(() => (this.isGenerating = false)))
+      .subscribe({
+        next: (result) => {
+          this.generatedQuestions = (result.questions || []).map((question) => ({
+            prompt: question.prompt,
+            options: this.ensureFourOptions(question.options),
+            correctOption: Number(question.correctOption || 0),
+            explanation: question.explanation || '',
+          }));
+          this.form.title = `${result.documentTitle} Quiz`;
+          this.form.description = `AI-generated quiz from ${result.documentTitle}.`;
+          this.successMessage = 'Quiz generated. Review and edit before saving.';
+        },
+        error: (err) => {
+          console.error('Error generating quiz:', err);
+          this.errorMessage = err?.error?.detail || err?.error?.message || 'Could not generate quiz from the selected PDF.';
+        },
+      });
+  }
+
+  saveGeneratedQuiz(): void {
+    if (!this.form.title.trim() || !this.form.courseId || !this.generatedQuestions.length) {
+      this.errorMessage = 'Generated quiz title, course, and questions are required.';
+      return;
+    }
+
+    const invalidQuestion = this.generatedQuestions.some((question) => {
+      const options = this.ensureFourOptions(question.options);
+      return !question.prompt.trim() || options.some((option) => !option.trim());
+    });
+    if (invalidQuestion) {
+      this.errorMessage = 'Each generated question needs text and four options.';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.isSaving = true;
+
+    const payload = {
+      title: this.form.title,
+      description: this.form.description,
+      courseId: this.form.courseId,
+      level: this.form.level,
+      subject: this.form.subject,
+      isPublished: true,
+      timeLimitMinutes: Number(this.form.timeLimitMinutes),
+      questions: this.generatedQuestions.map((question) => ({
+        prompt: question.prompt,
+        options: this.ensureFourOptions(question.options),
+        correctOption: Number(question.correctOption),
+        explanation: question.explanation,
+      })),
+    };
+
+    this.teacherService
+      .createQuiz(payload)
+      .pipe(finalize(() => (this.isSaving = false)))
+      .subscribe({
+        next: () => {
+          this.successMessage = 'Generated quiz saved successfully.';
+          this.generatedQuestions = [];
+          this.resetForm();
+          this.loadQuizzes();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to save generated quiz.';
+        },
+      });
+  }
+
   viewAttempts(quiz: QuizItem): void {
     this.selectedQuizTitle = quiz.title;
     this.teacherService.getQuizAttempts(quiz._id).subscribe({
@@ -142,5 +267,13 @@ export class TeacherQuizzesComponent implements OnInit {
     this.form.optionC = '';
     this.form.correctOption = 0;
     this.form.explanation = '';
+  }
+
+  private ensureFourOptions(options: string[]): string[] {
+    const normalized = [...(options || [])].slice(0, 4);
+    while (normalized.length < 4) {
+      normalized.push('');
+    }
+    return normalized;
   }
 }
