@@ -2,7 +2,7 @@
 """
 Rebuild the Chroma vector store from the database knowledge documents.
 - Wipes the persisted Chroma directory.
-- Re-ingests all KnowledgeDocument rows using the current embedding model (tinyllama).
+- Re-ingests all KnowledgeDocument rows using the current configured Ollama models.
 - Skips empty/very short documents and obvious instruction/meta blobs.
 """
 

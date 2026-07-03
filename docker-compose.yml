@@ -17,7 +17,8 @@ services:
       - "8000:8000"
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=tinyllama
+      - OLLAMA_MODEL=gemma3:4b
+      - OLLAMA_FALLBACK_MODEL=gemma3:4b
       - CHROMA_PERSIST_DIRECTORY=./chroma_db
     volumes:
       - ./ai-chatbot-service/chroma_db:/app/chroma_db

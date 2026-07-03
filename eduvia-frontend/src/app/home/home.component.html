@@ -3,21 +3,35 @@
     <p class="eyebrow">AI-powered educational platform</p>
     <h1>{{ title }}</h1>
     <p class="subtitle">{{ subtitle }}</p>
-    <p class="description">
-      Eduvia combines Angular, NestJS, MongoDB, FastAPI, and a local Ollama model to deliver a secure learning and
-      support experience for students, teachers, and administrators.
-    </p>
 
     <div class="cta-row">
       <a routerLink="/chat" class="btn primary">Start Chatting</a>
       <a routerLink="/login" class="btn secondary">Sign In</a>
     </div>
+  </div>
+</section>
 
-    <div class="stats-grid">
-      <div class="stat-card" *ngFor="let stat of stats">
-        <strong>{{ stat.value }}</strong>
-        <span>{{ stat.label }}</span>
-      </div>
+<section class="overview-section">
+  <div class="section-heading">
+    <p class="eyebrow">What you can do</p>
+    <h2>One platform, three roles, a single learning flow.</h2>
+  </div>
+
+  <div class="overview-grid">
+    <article class="overview-card" *ngFor="let highlight of highlights">
+      <h3>{{ highlight.title }}</h3>
+      <p>{{ highlight.text }}</p>
+    </article>
+  </div>
+
+  <div class="flow-panel">
+    <div>
+      <p class="eyebrow">Quick path</p>
+      <h3>Start in three steps</h3>
     </div>
+
+    <ol>
+      <li *ngFor="let step of flow">{{ step }}</li>
+    </ol>
   </div>
 </section>

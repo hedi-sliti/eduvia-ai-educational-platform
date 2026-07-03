@@ -7,9 +7,9 @@ class Settings(BaseSettings):
     # Ollama settings
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     # Default chat model for the local defense flow
-    OLLAMA_MODEL: str = "tinyllama"
+    OLLAMA_MODEL: str = "gemma3:4b"
     # Fallback matches the local demo model
-    OLLAMA_FALLBACK_MODEL: str = "tinyllama"
+    OLLAMA_FALLBACK_MODEL: str = "gemma3:4b"
     # Lightweight embedding model keeps retrieval fast and compatible even when the chat model is large.
     OLLAMA_EMBED_MODEL: str = "nomic-embed-text"
     

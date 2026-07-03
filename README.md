@@ -1,6 +1,28 @@
 # Eduvia - AI Educational Platform
 
-An intelligent educational platform with AI-powered chatbot, RAG system, and role-based access for students, teachers, and administrators.
+Eduvia is a role-based educational platform that combines a modern Angular frontend, a NestJS application backend, and a FastAPI AI service for retrieval-augmented chat and document-based learning workflows.
+
+It is structured as a multi-service project for local development and portfolio presentation, with dedicated experiences for students, teachers, and administrators.
+
+## Overview
+
+Eduvia focuses on three connected product areas:
+
+- guided student learning through dashboards, quizzes, recommendations, and chat
+- teacher workflows for course support and Knowledge Base management
+- administrative visibility into users, activity, and platform analytics
+
+The AI service uses local Ollama models and ChromaDB-backed retrieval to support chatbot and document workflows without changing the core application architecture.
+
+## Architecture
+
+Eduvia is organized into three application layers plus shared local infrastructure:
+
+- Angular frontend for the user interface and role-based navigation
+- NestJS backend for authentication, business APIs, and platform data access
+- FastAPI AI service for RAG, PDF ingestion, and chatbot logic
+- MongoDB for backend application data
+- Ollama for local chat and embedding models
 
 ## Project Structure
 
@@ -21,12 +43,18 @@ chatbot_pi/
 - **Database**: MongoDB
 - **Deployment**: Docker & Docker Compose
 
+## Model Configuration
+
+- **Chat model**: `gemma3:4b`
+- **Embedding model**: `nomic-embed-text`
+
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+
 - Python 3.10+
+- MongoDB
 - Docker & Docker Compose (optional)
 - Ollama (for local AI model)
 
@@ -44,7 +72,7 @@ ollama serve
 cd ai-chatbot-service
 cp .env.example .env  # Update .env as needed
 pip install -r requirements.txt
-python run_simple.py
+python start.py
 ```
 
 #### Step 3: NestJS Backend
@@ -52,7 +80,7 @@ python run_simple.py
 ```bash
 cd eduvia-backend
 npm install
-npm run seed  # Seed test users
+npm run seed:demo
 npm run start:dev
 ```
 
@@ -70,6 +98,35 @@ npm start
 docker-compose up -d
 ```
 
+## Features By Role
+
+### Student
+
+- JWT-based login and protected student routes
+- Dashboard with learning overview
+- Chat experience backed by the AI service
+- Progress tracking
+- Quiz discovery and attempts
+- Recommendations view
+- Community and support pages
+
+### Teacher
+
+- JWT-based login and protected teacher routes
+- Teacher dashboard
+- Knowledge Base management for PDF upload, listing, and deletion
+- Course management
+- Quiz management and attempt review
+- At-risk student progress view
+- Reminder and support workflows
+
+### Admin
+
+- JWT-based login and protected admin routes
+- Admin dashboard
+- User management
+- Analytics overview, users, learning, and engagement endpoints
+
 ## Services & Ports
 
 - **Frontend (Angular)**: http://localhost:4200
@@ -80,175 +137,48 @@ docker-compose up -d
 
 ## Test Accounts
 
-After seeding the database, you can use these test accounts:
+After seeding the database, you can use these development accounts:
 
 - **Admin**: admin@eduvia.com / Admin123!
 - **Teacher**: teacher@eduvia.com / Teacher123!
 - **Student**: student@eduvia.com / Student123!
 
-## Features
+## Seed Commands
 
-### Implemented
-- AI Chatbot with RAG (Retrieval-Augmented Generation)
-- Teacher-only Knowledge Base management (PDF upload/list/delete)
-- User authentication with JWT
-- Role-based access control (Admin, Teacher, Student)
-- Student flow: dashboard, chat, progress, quizzes, recommendations, community, support
-- Teacher flow: dashboard, knowledge management, courses CRUD, quizzes, at-risk progress view, reminders/support
-- Admin flow: dashboard summary, users CRUD + role updates, analytics (overview/users/learning/engagement)
-- Seed script for test users
-- MongoDB integration for data storage
+Use the backend seed modes depending on the local state you want:
 
-### Future Work
-- Real-time notifications
-- Keycloak integration (for production)
-- Advanced community/forum and collaboration features
+```bash
+cd eduvia-backend
+npm run seed:demo
+```
 
-## Demo Guide
+Seeds the full local demo dataset for all platform areas.
 
-### Prerequisites
+```bash
+cd eduvia-backend
+npm run seed:clean
+```
 
-- Node.js
-- Python
-- MongoDB or Docker
-- Ollama if you want live AI generation
+Resets development collections and recreates only the essential student, teacher, and admin accounts.
 
-### Startup Commands
+## Local Data Reset
 
-#### AI service
+The AI service includes a local cleanup utility for upload, Chroma, and local document metadata reset:
 
 ```bash
 cd ai-chatbot-service
-pip install -r requirements.txt
-python run_simple.py
+python scripts/reset_local_dev_data.py
+python scripts/reset_local_dev_data.py --apply
 ```
 
-#### Backend
+This script is intended for local development cleanup and preserves the required folders after reset.
 
-```bash
-cd eduvia-backend
-npm install
-npm run seed
-npm run start:dev
-```
+## Local Limitations
 
-#### Frontend
-
-```bash
-cd eduvia-frontend
-npm install
-npm start
-```
-
-#### MongoDB
-
-```bash
-docker-compose up -d mongodb
-```
-
-If Docker is unavailable, use a local MongoDB instance on `mongodb://127.0.0.1:27017/eduvia`.
-
-#### Docker Compose
-
-```bash
-docker-compose up --build
-```
-
-### Seed Command
-
-```bash
-cd eduvia-backend
-npm run seed
-```
-
-### Test Accounts
-
-- admin@eduvia.com / Admin123!
-- teacher@eduvia.com / Teacher123!
-- student@eduvia.com / Student123!
-
-### URLs
-
-- Frontend: http://localhost:4200/
-- Backend: http://localhost:3001/
-- AI service: http://localhost:8000/
-- MongoDB: mongodb://127.0.0.1:27017/eduvia
-
-### Recommended Demo Scenario
-
-1. Login as student and open dashboard.
-2. Open chat and ask one question.
-3. Confirm no public Knowledge page is available to student.
-4. Open progress.
-5. Open quizzes.
-6. Open recommendations.
-7. Open community.
-8. Open support, then logout.
-9. Login as teacher: dashboard -> knowledge management (upload/list PDFs) -> courses -> quizzes -> progress -> support, then logout.
-10. Login as admin: dashboard -> users -> analytics.
-
-### Limitations
-
-- Docker Compose exists, but the full container runtime was not completed in-session because the Ollama image download was long.
-- Ollama must be running locally for chatbot generation.
-- The FastAPI service falls back to SQLite when the configured MySQL connection is unavailable.
-- Some advanced features such as full Socket.io chat/forum and complete Keycloak integration are future work.
-
-### Defense Script
-
-#### Startup order
-
-1. Start MongoDB or Docker.
-2. Start Ollama if you want live generation.
-3. Start the AI service.
-4. Start the NestJS backend.
-5. Start the Angular frontend.
-6. Run the seed script before logging in.
-
-#### Student demo
-
-1. Open the frontend at http://localhost:4200/.
-2. Login as `student@eduvia.com` / `Student123!`.
-3. Open the student dashboard.
-4. Open chat and ask one question.
-5. Confirm chatbot response appears.
-6. Confirm no public Knowledge link is visible.
-7. Open progress.
-8. Open quizzes.
-9. Open recommendations.
-10. Open community.
-11. Open support.
-12. Logout.
-
-#### Teacher demo
-
-1. Login as `teacher@eduvia.com` / `Teacher123!`.
-2. Open the teacher dashboard.
-3. Open teacher knowledge management (`/teacher/knowledge`) and upload/list PDFs.
-4. Open courses.
-5. Open quizzes.
-6. Open progress (at-risk view).
-7. Open support.
-8. Logout.
-
-#### Admin demo
-
-1. Login as `admin@eduvia.com` / `Admin123!`.
-2. Open the admin dashboard.
-3. View the users list.
-4. Open analytics.
-5. Logout.
-
-#### What to say during the defense
-
-- Angular is the frontend.
-- NestJS is the backend.
-- MongoDB stores users, courses, and assessments.
-- FastAPI handles AI and RAG.
-- Ollama provides local LLM generation.
-- JWT handles authentication.
-- Roles protect the Student, Teacher, and Admin pages.
-- React was removed because the current specification requires Angular.
+- Ollama must be running locally for AI chat and PDF ingestion workflows.
+- MongoDB must be available locally or through Docker for the NestJS backend.
+- The FastAPI service may fall back to local SQLite when its configured MySQL connection is unavailable.
+- Angular build budget warnings are non-blocking as long as the frontend build completes successfully.
 
 ## Environment Configuration
 
@@ -259,6 +189,14 @@ Each service has its own `.env.example` file for reference. Copy to `.env` and c
 - `MONGODB_URI`: MongoDB connection string (default: mongodb://localhost:27017/eduvia)
 - `PYTHON_AI_URL`: URL for FastAPI AI service (default: http://localhost:8000)
 - `JWT_SECRET`: Secret key for signing JWT tokens (default: fallback-secret-key-change-in-production)
+
+### AI Service Environment Variables (`ai-chatbot-service/.env`)
+- `OLLAMA_BASE_URL`: Local Ollama endpoint
+- `OLLAMA_MODEL`: Chat model name, set to `gemma3:4b`
+- `OLLAMA_FALLBACK_MODEL`: Fallback chat model, aligned to `gemma3:4b`
+- `OLLAMA_EMBED_MODEL`: Embedding model name, set to `nomic-embed-text`
+- `CHROMA_PERSIST_DIRECTORY`: Local Chroma persistence path
+- `MYSQL_URL`: SQLAlchemy connection used by the AI service
 
 ## License
 

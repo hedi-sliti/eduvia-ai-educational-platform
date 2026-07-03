@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" role="img" aria-labelledby="title desc">
+  <title id="title">EduVia</title>
+  <desc id="desc">EduVia logo with a lightbulb and brain icon, wordmark, and tagline</desc>
+  <rect width="360" height="120" rx="20" fill="none"/>
+  <g transform="translate(8 8)">
+    <circle cx="46" cy="50" r="36" fill="#fff" stroke="#111111" stroke-width="4"/>
+    <path d="M46 18c-11 0-20 8-20 18 0 6 3 11 8 14-6 3-10 8-10 15 0 8 6 15 14 16 2 6 8 10 15 10 6 0 12-3 15-8 5-2 9-7 9-13 0-7-4-13-10-16 3-4 5-8 5-13 0-13-11-23-26-23Z" fill="none" stroke="#111111" stroke-width="4" stroke-linejoin="round"/>
+    <circle cx="31" cy="38" r="4" fill="#fff" stroke="#111111" stroke-width="4"/>
+    <circle cx="30" cy="55" r="4" fill="#fff" stroke="#111111" stroke-width="4"/>
+    <circle cx="34" cy="73" r="4" fill="#fff" stroke="#111111" stroke-width="4"/>
+    <path d="M84 28h10M90 16v-8M106 34l8-8M112 50h10M106 66l8 8" fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round"/>
+    <path d="M34 82h24v10H34z" fill="#fff" stroke="#111111" stroke-width="4"/>
+    <path d="M39 92h14v8H39z" fill="#fff" stroke="#111111" stroke-width="4"/>
+    <path d="M45 96h2" stroke="#111111" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <text x="140" y="72" fill="#c62828" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="700">Edu</text>
+  <text x="225" y="72" fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="700">Via</text>
+  <text x="141" y="98" fill="#6b6b6b" font-family="Arial, Helvetica, sans-serif" font-size="14">Learn smart. Think EduVia.</text>
+</svg>

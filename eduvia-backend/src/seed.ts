@@ -7,67 +7,76 @@ import { UserRole } from './users/schemas/user.schema';
 import { CoursesService } from './courses/courses.service';
 import { AssessmentsService } from './assessments/assessments.service';
 import { RecommendationsService } from './recommendations/recommendations.service';
+import { Assessment, AssessmentDocument } from './assessments/schemas/assessment.schema';
 import { Course, CourseDocument } from './courses/schemas/course.schema';
 import { Quiz, QuizAttempt, QuizAttemptDocument, QuizDocument } from './quizzes/schemas/quiz.schema';
 import { Progress, ProgressDocument, ProgressRiskLevel } from './progress/schemas/progress.schema';
+import {
+  Recommendation,
+  RecommendationDocument,
+} from './recommendations/schemas/recommendation.schema';
 import { Reminder, ReminderDocument } from './reminders-support/schemas/reminder.schema';
 import { SupportMessage, SupportMessageDocument } from './reminders-support/schemas/support-message.schema';
 import { Club, ClubDocument } from './clubs-events/schemas/club.schema';
 import { Event, EventDocument } from './clubs-events/schemas/event.schema';
 import { ReminderPriority } from './reminders-support/dto/create-reminder.dto';
 
-async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(AppModule);
+type SeedMode = 'clean' | 'demo';
 
-  const usersService = app.get(UsersService);
-  const coursesService = app.get(CoursesService);
-  const assessmentsService = app.get(AssessmentsService);
-  const recommendationsService = app.get(RecommendationsService);
+type SeedUsers = {
+  admin: any;
+  teacher: any;
+  student: any;
+};
 
-  const courseModel = app.get<Model<CourseDocument>>(getModelToken(Course.name));
-  const quizModel = app.get<Model<QuizDocument>>(getModelToken(Quiz.name));
-  const quizAttemptModel = app.get<Model<QuizAttemptDocument>>(
-    getModelToken(QuizAttempt.name),
-  );
-  const progressModel = app.get<Model<ProgressDocument>>(getModelToken(Progress.name));
-  const reminderModel = app.get<Model<ReminderDocument>>(getModelToken(Reminder.name));
-  const supportMessageModel = app.get<Model<SupportMessageDocument>>(
-    getModelToken(SupportMessage.name),
-  );
-  const clubModel = app.get<Model<ClubDocument>>(getModelToken(Club.name));
-  const eventModel = app.get<Model<EventDocument>>(getModelToken(Event.name));
+type SeedContext = {
+  usersService: UsersService;
+  coursesService: CoursesService;
+  assessmentsService: AssessmentsService;
+  recommendationsService: RecommendationsService;
+  courseModel: Model<CourseDocument>;
+  assessmentModel: Model<AssessmentDocument>;
+  recommendationModel: Model<RecommendationDocument>;
+  quizModel: Model<QuizDocument>;
+  quizAttemptModel: Model<QuizAttemptDocument>;
+  progressModel: Model<ProgressDocument>;
+  reminderModel: Model<ReminderDocument>;
+  supportMessageModel: Model<SupportMessageDocument>;
+  clubModel: Model<ClubDocument>;
+  eventModel: Model<EventDocument>;
+};
 
-  // Clear existing users
-  console.log('Clearing existing users...');
-  const users = await usersService.findAll();
-  for (const user of users) {
-    await usersService.remove(user._id.toString());
-  }
+function resolveSeedMode(): SeedMode {
+  const modeArg = process.argv.find((arg) => arg.startsWith('--mode='));
+  const rawMode = (modeArg?.split('=')[1] || process.env.EDUVIA_SEED_MODE || 'demo').toLowerCase();
+  return rawMode === 'clean' ? 'clean' : 'demo';
+}
 
-  console.log('Clearing existing demo content...');
-  const existingCourses = await coursesService.findAll();
-  for (const course of existingCourses) {
-    await coursesService.remove(course._id.toString());
-  }
+async function resetDevelopmentData(context: SeedContext) {
+  console.log('Clearing development users and collections...');
 
-  const existingAssessments = await assessmentsService.findAll();
-  for (const assessment of existingAssessments) {
-    await assessmentsService.remove(assessment._id.toString());
-  }
-
-  console.log('Clearing quizzes, attempts, progress, reminders, support, clubs, and events...');
   await Promise.all([
-    quizAttemptModel.deleteMany({}),
-    quizModel.deleteMany({}),
-    progressModel.deleteMany({}),
-    reminderModel.deleteMany({}),
-    supportMessageModel.deleteMany({}),
-    eventModel.deleteMany({}),
-    clubModel.deleteMany({}),
+    context.quizAttemptModel.deleteMany({}),
+    context.quizModel.deleteMany({}),
+    context.progressModel.deleteMany({}),
+    context.reminderModel.deleteMany({}),
+    context.supportMessageModel.deleteMany({}),
+    context.eventModel.deleteMany({}),
+    context.clubModel.deleteMany({}),
+    context.recommendationModel.deleteMany({}),
+    context.assessmentModel.deleteMany({}),
+    context.courseModel.deleteMany({}),
   ]);
 
-  // Seed test users
-  console.log('Seeding test users...');
+  const users = await context.usersService.findAll();
+  for (const user of users) {
+    await context.usersService.remove(user._id.toString());
+  }
+}
+
+async function seedEssentialUsers(usersService: UsersService): Promise<SeedUsers> {
+  console.log('Seeding essential users...');
+
   const admin = await usersService.create({
     email: 'admin@eduvia.com',
     password: 'Admin123!',
@@ -86,6 +95,12 @@ async function bootstrap() {
     name: 'Student User',
     role: UserRole.STUDENT,
   });
+
+  return { admin, teacher, student };
+}
+
+async function seedDemoContent(context: SeedContext, users: SeedUsers) {
+  const { admin, teacher, student } = users;
 
   console.log('Seeding courses...');
   const seededCourses = [
@@ -113,10 +128,10 @@ async function bootstrap() {
   ];
 
   for (const course of seededCourses) {
-    await coursesService.create(course);
+    await context.coursesService.create(course);
   }
 
-  const createdCourses = await courseModel.find().sort({ createdAt: 1 }).exec();
+  const createdCourses = await context.courseModel.find().sort({ createdAt: 1 }).exec();
   const aiCourse = createdCourses.find(
     (course) => course.title === 'Introduction to Artificial Intelligence',
   );
@@ -132,7 +147,7 @@ async function bootstrap() {
   }
 
   console.log('Seeding assessments (mixed performance for progress/at-risk)...');
-  await assessmentsService.create(student._id.toString(), {
+  await context.assessmentsService.create(student._id.toString(), {
     answers: {
       q1: 'Artificial intelligence is the science of making machines perform tasks that normally need human intelligence.',
       q2: 'Machine learning helps systems learn from data and improve over time.',
@@ -142,7 +157,7 @@ async function bootstrap() {
     completed: true,
   });
 
-  await assessmentsService.create(student._id.toString(), {
+  await context.assessmentsService.create(student._id.toString(), {
     answers: {
       q1: 'I still confuse AI, ML, and deep learning in some scenarios.',
       q2: 'I need more exercises on algorithmic thinking and problem decomposition.',
@@ -154,21 +169,21 @@ async function bootstrap() {
 
   console.log('Seeding recommendations...');
 
-  await recommendationsService.createForStudent(student._id.toString(), {
+  await context.recommendationsService.createForStudent(student._id.toString(), {
     title: 'Revise AI fundamentals',
     description: 'Spend 20 minutes reviewing AI basics and key ML terms before your next quiz.',
     type: 'study',
     priority: 3,
   });
 
-  await recommendationsService.createForStudent(student._id.toString(), {
+  await context.recommendationsService.createForStudent(student._id.toString(), {
     title: 'Practice with the chatbot',
     description: 'Ask one revision question and read the answer aloud during the demo.',
     type: 'practice',
     priority: 2,
   });
 
-  await recommendationsService.createForStudent(student._id.toString(), {
+  await context.recommendationsService.createForStudent(student._id.toString(), {
     title: 'Meet your teacher for support',
     description: 'Book a short support check-in to discuss weak quiz topics.',
     type: 'support',
@@ -177,7 +192,7 @@ async function bootstrap() {
 
   console.log('Seeding quizzes and quiz attempts...');
 
-  const aiQuiz = await quizModel.create({
+  const aiQuiz = await context.quizModel.create({
     title: 'AI Essentials Quiz',
     description: 'Covers AI basics and distinctions between AI and ML.',
     courseId: aiCourse._id,
@@ -211,7 +226,7 @@ async function bootstrap() {
     ],
   });
 
-  const programmingQuiz = await quizModel.create({
+  const programmingQuiz = await context.quizModel.create({
     title: 'Programming Basics Quiz',
     description: 'Logic, variables, and control flow fundamentals.',
     courseId: programmingCourse._id,
@@ -222,11 +237,7 @@ async function bootstrap() {
     questions: [
       {
         prompt: 'A variable is used to:',
-        options: [
-          'Store data values',
-          'Connect to Wi-Fi',
-          'Replace all functions',
-        ],
+        options: ['Store data values', 'Connect to Wi-Fi', 'Replace all functions'],
         correctOption: 0,
       },
       {
@@ -236,17 +247,13 @@ async function bootstrap() {
       },
       {
         prompt: 'What is debugging?',
-        options: [
-          'Finding and fixing code issues',
-          'Deleting all files',
-          'Compressing videos',
-        ],
+        options: ['Finding and fixing code issues', 'Deleting all files', 'Compressing videos'],
         correctOption: 0,
       },
     ],
   });
 
-  const mathQuiz = await quizModel.create({
+  const mathQuiz = await context.quizModel.create({
     title: 'Discrete Math Quick Check',
     description: 'Logic and set basics for CS learners.',
     courseId: mathCourse._id,
@@ -268,7 +275,7 @@ async function bootstrap() {
     ],
   });
 
-  await quizAttemptModel.create([
+  await context.quizAttemptModel.create([
     {
       quizId: aiQuiz._id,
       studentId: student._id,
@@ -308,7 +315,7 @@ async function bootstrap() {
   const overallScore = Number(((averageAssessmentScore + averageQuizScore) / 2).toFixed(2));
   const riskLevel = overallScore < 60 ? ProgressRiskLevel.AT_RISK : ProgressRiskLevel.MODERATE;
 
-  await progressModel.create({
+  await context.progressModel.create({
     studentId: student._id,
     assessmentCount: assessmentScores.length,
     averageAssessmentScore,
@@ -329,7 +336,7 @@ async function bootstrap() {
 
   console.log('Seeding reminders and support messages...');
 
-  await reminderModel.create([
+  await context.reminderModel.create([
     {
       studentId: student._id,
       createdBy: teacher._id,
@@ -353,7 +360,7 @@ async function bootstrap() {
     },
   ]);
 
-  await supportMessageModel.create([
+  await context.supportMessageModel.create([
     {
       studentId: student._id,
       createdBy: teacher._id,
@@ -376,7 +383,7 @@ async function bootstrap() {
 
   console.log('Seeding clubs and events...');
 
-  const aiClub = await clubModel.create({
+  const aiClub = await context.clubModel.create({
     name: 'AI Innovation Club',
     description: 'Build mini AI projects, share prompts, and practice model evaluation.',
     category: 'Technology',
@@ -388,7 +395,7 @@ async function bootstrap() {
     createdBy: teacher._id,
   });
 
-  const codingClub = await clubModel.create({
+  const codingClub = await context.clubModel.create({
     name: 'Code & Debug Circle',
     description: 'Peer sessions to practice programming logic and debugging workflows.',
     category: 'Computer Science',
@@ -400,7 +407,7 @@ async function bootstrap() {
     createdBy: admin._id,
   });
 
-  await eventModel.create([
+  await context.eventModel.create([
     {
       title: 'AI Project Sprint',
       description: 'Collaborative workshop to build and present a small AI tutoring assistant.',
@@ -430,26 +437,84 @@ async function bootstrap() {
       createdBy: admin._id,
     },
   ]);
+}
 
+async function logSeedSummary(context: SeedContext, studentId: string, mode: SeedMode) {
   const counts = {
-    courses: await courseModel.countDocuments(),
-    quizzes: await quizModel.countDocuments(),
-    quizAttempts: await quizAttemptModel.countDocuments(),
-    assessments: (await assessmentsService.findByStudent(student._id.toString())).length,
-    recommendations: (await recommendationsService.findByStudent(student._id.toString())).length,
-    progress: await progressModel.countDocuments(),
-    reminders: await reminderModel.countDocuments(),
-    supportMessages: await supportMessageModel.countDocuments(),
-    clubs: await clubModel.countDocuments(),
-    events: await eventModel.countDocuments(),
+    courses: await context.courseModel.countDocuments(),
+    assessments: await context.assessmentModel.countDocuments(),
+    recommendations: await context.recommendationModel.countDocuments(),
+    quizzes: await context.quizModel.countDocuments(),
+    quizAttempts: await context.quizAttemptModel.countDocuments(),
+    progress: await context.progressModel.countDocuments(),
+    reminders: await context.reminderModel.countDocuments(),
+    supportMessages: await context.supportMessageModel.countDocuments(),
+    clubs: await context.clubModel.countDocuments(),
+    events: await context.eventModel.countDocuments(),
+    studentRecommendations: (await context.recommendationsService.findByStudent(studentId)).length,
+    studentAssessments: (await context.assessmentsService.findByStudent(studentId)).length,
   };
 
-  console.log('Seed complete!');
+  console.log(`Seed complete for mode: ${mode}`);
   console.log('Seeded counts:', counts);
-  console.log('Test users:');
+  console.log('Essential users:');
   console.log('Admin: admin@eduvia.com / Admin123!');
   console.log('Teacher: teacher@eduvia.com / Teacher123!');
   console.log('Student: student@eduvia.com / Student123!');
+}
+
+async function bootstrap() {
+  const mode = resolveSeedMode();
+  const app = await NestFactory.createApplicationContext(AppModule);
+
+  const usersService = app.get(UsersService);
+  const coursesService = app.get(CoursesService);
+  const assessmentsService = app.get(AssessmentsService);
+  const recommendationsService = app.get(RecommendationsService);
+
+  const courseModel = app.get<Model<CourseDocument>>(getModelToken(Course.name));
+  const assessmentModel = app.get<Model<AssessmentDocument>>(getModelToken(Assessment.name));
+  const recommendationModel = app.get<Model<RecommendationDocument>>(
+    getModelToken(Recommendation.name),
+  );
+  const quizModel = app.get<Model<QuizDocument>>(getModelToken(Quiz.name));
+  const quizAttemptModel = app.get<Model<QuizAttemptDocument>>(
+    getModelToken(QuizAttempt.name),
+  );
+  const progressModel = app.get<Model<ProgressDocument>>(getModelToken(Progress.name));
+  const reminderModel = app.get<Model<ReminderDocument>>(getModelToken(Reminder.name));
+  const supportMessageModel = app.get<Model<SupportMessageDocument>>(
+    getModelToken(SupportMessage.name),
+  );
+  const clubModel = app.get<Model<ClubDocument>>(getModelToken(Club.name));
+  const eventModel = app.get<Model<EventDocument>>(getModelToken(Event.name));
+
+  const context: SeedContext = {
+    usersService,
+    coursesService,
+    assessmentsService,
+    recommendationsService,
+    courseModel,
+    assessmentModel,
+    recommendationModel,
+    quizModel,
+    quizAttemptModel,
+    progressModel,
+    reminderModel,
+    supportMessageModel,
+    clubModel,
+    eventModel,
+  };
+
+  console.log(`Starting ${mode} seed...`);
+  await resetDevelopmentData(context);
+  const users = await seedEssentialUsers(usersService);
+
+  if (mode === 'demo') {
+    await seedDemoContent(context, users);
+  }
+
+  await logSeedSummary(context, users.student._id.toString(), mode);
 
   await app.close();
 }

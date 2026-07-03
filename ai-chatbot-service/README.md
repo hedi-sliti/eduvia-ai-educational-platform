@@ -32,7 +32,7 @@ ai-chatbot-service/
 
 1. **Python 3.8+**
 2. **MySQL Database**
-3. **Ollama** (chat model: `llama3:70b`, embeddings model: `nomic-embed-text`)
+3. **Ollama** (chat model: `gemma3:4b`, embeddings model: `nomic-embed-text`)
 4. **Git**
 
 ### Installation
@@ -67,7 +67,7 @@ cp .env.example .env
 ```bash
 # Install Ollama (https://ollama.ai/)
 # Pull the chat and embedding models
-ollama pull llama3:70b
+ollama pull gemma3:4b
 ollama pull nomic-embed-text
 ```
 
@@ -118,7 +118,7 @@ Once running, visit:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OLLAMA_BASE_URL` | Ollama server URL | `http://localhost:11434` |
-| `OLLAMA_MODEL` | LLM chat model name | `llama3:70b` |
+| `OLLAMA_MODEL` | LLM chat model name | `gemma3:4b` |
 | `OLLAMA_EMBED_MODEL` | Embedding model for vector search | `nomic-embed-text` |
 | `MYSQL_URL` | MySQL connection string | - |
 | `CHROMA_PERSIST_DIRECTORY` | Vector DB storage path | `./chroma_db` |
@@ -140,6 +140,20 @@ The application uses MySQL for persistent storage. Tables are created automatica
 ```bash
 pytest tests/
 ```
+
+### Resetting Local Development Data
+```bash
+python scripts/reset_local_dev_data.py
+python scripts/reset_local_dev_data.py --apply
+```
+
+This cleanup only targets local development data:
+- uploaded PDFs in local `uploads/` folders
+- local Chroma persistence data in `chroma_db/`
+- local SQLite `knowledge_documents` rows used by the chatbot service
+- root-level QA sample artifacts unless `--keep-root-artifacts` is passed
+
+The script recreates required folders after cleanup so the upload and RAG workflow still works.
 
 ### Code Style
 ```bash

@@ -1,0 +1,809 @@
+:root {
+  --eduvia-bg: #f6f1e8;
+  --eduvia-surface: rgba(255, 255, 255, 0.96);
+  --eduvia-surface-strong: #ffffff;
+  --eduvia-surface-soft: #fbf7f1;
+  --eduvia-ink: #111111;
+  --eduvia-muted: #5f5a53;
+  --eduvia-border: rgba(17, 17, 17, 0.12);
+  --eduvia-border-strong: rgba(198, 39, 39, 0.28);
+  --eduvia-accent: #c62828;
+  --eduvia-accent-dark: #8f1a1a;
+  --eduvia-accent-soft: rgba(198, 40, 40, 0.08);
+  --eduvia-shadow: 0 20px 60px rgba(17, 17, 17, 0.08);
+  --eduvia-radius-xl: 30px;
+  --eduvia-radius-lg: 22px;
+  --eduvia-radius-md: 16px;
+}
+
+.hero-card,
+.login-card,
+.dashboard-hero,
+.page-header,
+.card,
+.panel-card,
+.chat-container,
+.upload-panel,
+.document-card,
+.hero-panel,
+.summary-card {
+  background: var(--eduvia-surface);
+  border: 1px solid var(--eduvia-border);
+  box-shadow: var(--eduvia-shadow);
+}
+
+.eyebrow {
+  margin: 0 0 0.55rem;
+  color: var(--eduvia-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.page-header,
+.dashboard-hero,
+.hero-card,
+.chat-hero,
+.login-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before,
+.dashboard-hero::before,
+.hero-card::before,
+.chat-hero::before,
+.login-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0)),
+    linear-gradient(90deg, rgba(198, 40, 40, 0.08), transparent 16%, transparent 84%, rgba(198, 40, 40, 0.08));
+}
+
+.page-header > *,
+.dashboard-hero > *,
+.hero-card > *,
+.chat-hero > *,
+.login-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.page-header {
+  border-radius: var(--eduvia-radius-lg);
+  padding: 1.4rem 1.5rem 1.2rem;
+  border-left: 6px solid var(--eduvia-accent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(251, 247, 241, 0.98)),
+    repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(17, 17, 17, 0.04) 27px);
+}
+
+.page-header h1,
+.dashboard-hero h1,
+.hero-copy h1,
+.chat-hero h1,
+.login-card h1,
+.login-card h2,
+.card h2,
+.panel-card h2,
+.hero-panel h2 {
+  margin: 0;
+  color: var(--eduvia-ink);
+  letter-spacing: -0.02em;
+}
+
+.page-header h1,
+.dashboard-hero h1,
+.hero-copy h1,
+.chat-hero h1,
+.login-card h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.page-header h1 {
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+}
+
+.page-header p,
+.dashboard-hero p,
+.hero-copy .subtitle,
+.hero-copy .description,
+.chat-hero p,
+.login-card .lead,
+.card p,
+.panel-card p,
+.panel-card li,
+.item p,
+.item small,
+.summary-card span,
+.summary-card small,
+.hero-panel p,
+.hero-panel li,
+.document-card p,
+.document-card small {
+  color: var(--eduvia-muted);
+  line-height: 1.68;
+}
+
+.status {
+  border-radius: 999px;
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+
+.status.loading {
+  background: #fff7ea;
+  color: #9a5700;
+  border-color: rgba(154, 87, 0, 0.16);
+}
+
+.status.error {
+  background: #fff0f0;
+  color: #9b1c1c;
+  border-color: rgba(155, 28, 28, 0.16);
+}
+
+.status.success {
+  background: #f4fbf5;
+  color: #146c2e;
+  border-color: rgba(20, 108, 46, 0.14);
+}
+
+.card,
+.panel-card,
+.upload-panel,
+.document-card,
+.summary-card,
+.login-card,
+.chat-container {
+  border-radius: var(--eduvia-radius-lg);
+}
+
+.card,
+.panel-card,
+.upload-panel,
+.document-card,
+.summary-card {
+  padding: 1.25rem;
+}
+
+.grid,
+.card-grid,
+.summary-grid,
+.documents-grid,
+.panel-list,
+.quick-links-grid,
+.stats-grid,
+.suggestion-list,
+.metrics {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid,
+.card-grid,
+.documents-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.quick-links-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.card,
+.summary-card,
+.document-card,
+.panel-item,
+.item {
+  border: 1px solid var(--eduvia-border);
+  border-radius: var(--eduvia-radius-md);
+  background: var(--eduvia-surface-strong);
+}
+
+.card,
+.summary-card,
+.document-card,
+.panel-item,
+.item {
+  box-shadow: 0 14px 34px rgba(17, 17, 17, 0.05);
+}
+
+.card h2,
+.panel-card h2,
+.summary-card h3,
+.item h3,
+.document-card h3,
+.hero-panel h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.card h2,
+.panel-card h2,
+.hero-panel h2,
+.login-card h2 {
+  font-size: 1.4rem;
+}
+
+.card h3,
+.item h3,
+.document-card h3,
+.summary-card h3 {
+  font-size: 1.02rem;
+}
+
+.item,
+.panel-item {
+  padding: 1rem;
+}
+
+.item,
+.panel-item,
+.document-card,
+.summary-card {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.item h3,
+.item p,
+.item small,
+.summary-card h3,
+.summary-card strong,
+.document-card h3,
+.document-card p,
+.document-card small,
+.panel-item h3,
+.panel-item p {
+  margin: 0;
+}
+
+.muted {
+  color: var(--eduvia-muted);
+}
+
+.actions,
+.cta-row,
+.inline-grid,
+.topbar-nav,
+.topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.inline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.metrics {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.actions button,
+.cta-row a,
+.quick-links-grid button,
+.chat-input button,
+.login-card button,
+.attempt-link,
+.suggestion-chip,
+.document-card .danger,
+.topbar-nav a,
+.login-link,
+.logout-button {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.actions button,
+.quick-links-grid button,
+.chat-input button,
+.login-card button,
+.attempt-link,
+.document-card .danger {
+  background: linear-gradient(135deg, var(--eduvia-accent), var(--eduvia-accent-dark));
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(198, 40, 40, 0.18);
+}
+
+.actions button.secondary,
+button.secondary {
+  background: #3f3a35;
+  color: #fff;
+}
+
+.actions button.danger,
+button.danger,
+.document-card .danger {
+  background: linear-gradient(135deg, #b42318, #7a1313);
+}
+
+.cta-row a.secondary,
+.topbar-nav a,
+.login-link,
+.logout-button,
+.suggestion-chip {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--eduvia-ink);
+  border-color: var(--eduvia-border);
+  box-shadow: 0 10px 22px rgba(17, 17, 17, 0.05);
+}
+
+.cta-row a.primary,
+.quick-links-grid button,
+.chat-input button,
+.login-card button,
+.attempt-link {
+  color: #fff;
+}
+
+.actions button:hover,
+.cta-row a:hover,
+.quick-links-grid button:hover,
+.chat-input button:hover,
+.login-card button:hover,
+.attempt-link:hover,
+.suggestion-chip:hover,
+.topbar-nav a:hover,
+.login-link:hover,
+.logout-button:hover,
+.document-card .danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(17, 17, 17, 0.1);
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--eduvia-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--eduvia-ink);
+  padding: 0.9rem 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+button:focus,
+a:focus {
+  outline: none;
+  border-color: rgba(198, 40, 40, 0.55);
+  box-shadow: 0 0 0 4px rgba(198, 40, 40, 0.12);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  border-radius: var(--eduvia-radius-md);
+  border: 1px dashed var(--eduvia-border-strong);
+  background: var(--eduvia-surface-soft);
+  color: var(--eduvia-muted);
+}
+
+.summary-card strong,
+.card-value {
+  display: block;
+  color: var(--eduvia-ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.45rem;
+}
+
+.risk {
+  color: var(--eduvia-accent);
+  font-weight: 800;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.hero-card,
+.dashboard-hero,
+.chat-hero {
+  border-radius: var(--eduvia-radius-xl);
+}
+
+.hero-copy,
+.hero-panel,
+.suggestion-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.hero-copy h1 {
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  line-height: 0.95;
+}
+
+.subtitle {
+  font-size: 1.15rem;
+}
+
+.description {
+  max-width: 62ch;
+}
+
+.hero-panel {
+  padding: 1.25rem;
+  border-radius: var(--eduvia-radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(251, 247, 241, 0.97)),
+    repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(17, 17, 17, 0.04) 29px);
+  border-left: 6px solid var(--eduvia-accent);
+}
+
+.panel-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--eduvia-accent);
+}
+
+.hero-panel ul,
+.panel-card ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.login-container {
+  min-height: 78vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+}
+
+.login-card {
+  width: min(100%, 560px);
+  padding: 2rem;
+  border-left: 6px solid var(--eduvia-accent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 246, 240, 0.98)),
+    repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(17, 17, 17, 0.04) 27px);
+}
+
+.login-card h1 {
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  text-align: center;
+}
+
+.login-card h2,
+.login-card .lead,
+.login-card .test-accounts {
+  text-align: center;
+}
+
+.login-card form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+
+.form-group {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.form-group label {
+  color: var(--eduvia-ink);
+  font-weight: 700;
+}
+
+.error-message {
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: #fff0f0;
+  color: #9b1c1c;
+  border: 1px solid rgba(155, 28, 28, 0.16);
+  font-weight: 700;
+}
+
+.test-accounts {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--eduvia-border);
+  background: var(--eduvia-surface-soft);
+}
+
+.test-accounts p {
+  margin: 0.2rem 0;
+}
+
+.dashboard,
+.admin-page,
+.student-page,
+.teacher-page,
+.chat-page,
+.knowledge-container {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-content {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.dashboard-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.45rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 246, 240, 0.98)),
+    repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(17, 17, 17, 0.04) 27px);
+  border-left: 6px solid var(--eduvia-accent);
+}
+
+.hero-summary {
+  min-width: 180px;
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--eduvia-surface-soft);
+  border: 1px solid var(--eduvia-border);
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.hero-summary strong {
+  font-size: 1.4rem;
+  color: var(--eduvia-ink);
+}
+
+.card-grid,
+.summary-grid {
+  align-items: stretch;
+}
+
+.card {
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(198, 40, 40, 0.24);
+  box-shadow: 0 18px 42px rgba(17, 17, 17, 0.08);
+}
+
+.primary-card {
+  background: linear-gradient(135deg, var(--eduvia-accent), var(--eduvia-accent-dark));
+  color: #fff;
+}
+
+.primary-card h3,
+.primary-card p,
+.primary-card strong {
+  color: #fff;
+}
+
+.summary-card h3 {
+  color: var(--eduvia-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.82rem;
+}
+
+.quick-links-grid button {
+  width: 100%;
+  padding: 0.85rem 1rem;
+}
+
+.knowledge-container {
+  padding: 0;
+}
+
+.knowledge-container h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+}
+
+.page-intro {
+  margin: 0;
+}
+
+.upload-panel {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1.25rem;
+  border-left: 6px solid var(--eduvia-accent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 246, 240, 0.98)),
+    repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(17, 17, 17, 0.04) 27px);
+}
+
+.upload-panel h3,
+.document-card h3 {
+  margin: 0;
+  color: var(--eduvia-ink);
+}
+
+.documents-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.document-card {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.document-card .danger {
+  justify-self: start;
+  margin-top: 0.35rem;
+  padding: 0.7rem 0.95rem;
+}
+
+.chat-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 1rem;
+  padding: 1.45rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 246, 240, 0.98)),
+    repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(17, 17, 17, 0.04) 27px);
+  border-left: 6px solid var(--eduvia-accent);
+}
+
+.suggestion-panel {
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid var(--eduvia-border);
+  background: var(--eduvia-surface-soft);
+}
+
+.suggestion-list {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.suggestion-chip {
+  padding: 0.7rem 0.95rem;
+  text-align: left;
+}
+
+.chat-container {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.message-row {
+  display: flex;
+}
+
+.user-row {
+  justify-content: flex-end;
+}
+
+.bot-row {
+  justify-content: flex-start;
+}
+
+.user-message,
+.bot-message {
+  max-width: min(80%, 760px);
+  padding: 1rem 1.05rem;
+  border-radius: 20px;
+  border: 1px solid var(--eduvia-border);
+}
+
+.user-message {
+  color: #fff;
+  background: linear-gradient(135deg, var(--eduvia-accent), var(--eduvia-accent-dark));
+  border-bottom-right-radius: 8px;
+}
+
+.bot-message {
+  background: #fffaf5;
+  color: var(--eduvia-ink);
+  border-bottom-left-radius: 8px;
+}
+
+.message-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.2rem 1.2rem;
+  border-top: 1px solid var(--eduvia-border);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.chat-input input {
+  flex: 1;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.typing-indicator span {
+  width: 9px;
+  height: 9px;
+  background: var(--eduvia-accent);
+  border-radius: 999px;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-block {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: start;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+
+  40% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 960px) {
+  .dashboard-hero,
+  .chat-hero,
+  .hero-card {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .user-message,
+  .bot-message {
+    max-width: 100%;
+  }
+}

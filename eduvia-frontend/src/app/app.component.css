@@ -1,9 +1,5 @@
 .app-shell {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(102, 126, 234, 0.18), transparent 35%),
-    radial-gradient(circle at top right, rgba(118, 75, 162, 0.14), transparent 32%),
-    #f6f8fc;
 }
 
 .topbar {
@@ -11,98 +7,56 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 2rem;
-  background: rgba(15, 23, 42, 0.88);
-  color: #fff;
+  padding: 1rem 1.5rem;
   position: sticky;
   top: 0;
-  z-index: 10;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 700;
-}
-
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.8rem;
-  background: linear-gradient(135deg, #667eea, #8b5cf6);
-  font-size: 1rem;
-}
-
-.brand-text {
-  font-size: 1.15rem;
-  letter-spacing: 0.04em;
+  z-index: 20;
+  backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.82);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.08);
+  box-shadow: 0 10px 30px rgba(17, 17, 17, 0.06);
 }
 
 .topbar-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  align-items: center;
   justify-content: center;
 }
 
 .topbar-nav a,
 .login-link,
 .logout-button {
-  color: #fff;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
-  padding: 0.55rem 0.95rem;
-  border-radius: 999px;
-  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  padding: 0.62rem 1rem;
 }
 
-.topbar-nav a:hover,
-.topbar-nav a.active,
-.login-link:hover,
-.logout-button:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.3);
+.topbar-nav a.active {
+  background: rgba(198, 40, 40, 0.09);
+  border-color: rgba(198, 40, 40, 0.22);
+  color: #8f1a1a;
 }
 
 .topbar-actions {
-  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: flex-end;
 }
 
 .role-pill {
-  padding: 0.45rem 0.75rem;
+  padding: 0.48rem 0.8rem;
   border-radius: 999px;
-  background: rgba(102, 126, 234, 0.18);
-  color: #e0e7ff;
-  font-weight: 600;
+  background: rgba(198, 40, 40, 0.1);
+  color: #8f1a1a;
+  font-weight: 800;
   letter-spacing: 0.04em;
 }
 
 .user-name {
-  color: #cbd5e1;
+  color: #5f5a53;
   font-size: 0.95rem;
 }
 
-.logout-button {
-  cursor: pointer;
-  font: inherit;
-}
-
 .main-content {
-  max-width: 1240px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem clamp(1rem, 2vw, 2rem) 3rem;
 }
 
 @media (max-width: 960px) {
@@ -111,9 +65,12 @@
     align-items: stretch;
   }
 
-  .topbar-actions,
-  .topbar-nav {
+  .brand {
     justify-content: center;
-    flex-wrap: wrap;
+  }
+
+  .topbar-nav,
+  .topbar-actions {
+    justify-content: center;
   }
 }
