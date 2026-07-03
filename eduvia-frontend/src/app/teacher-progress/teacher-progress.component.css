@@ -71,6 +71,18 @@ button {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
+.weak-topic {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.weak-topic small {
+  color: #64748b;
+}
+
 ul {
   margin: 0;
   padding-left: 1.1rem;

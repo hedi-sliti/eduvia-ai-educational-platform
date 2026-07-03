@@ -45,6 +45,9 @@ export class Progress {
   @Prop({ type: [String], default: [] })
   recommendations: string[];
 
+  @Prop({ type: [Object], default: [] })
+  weakTopics?: any[];
+
   @Prop({ type: Date, default: Date.now })
   lastComputedAt: Date;
 }

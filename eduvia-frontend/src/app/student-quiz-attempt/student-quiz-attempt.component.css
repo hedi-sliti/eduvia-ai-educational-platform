@@ -87,6 +87,38 @@
   color: #334155;
 }
 
+.revision-item,
+.suggestion-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.revision-item h3 {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.revision-item span {
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.suggestion-box {
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.muted {
+  color: #64748b;
+}
+
 button {
   border: none;
   background: #2563eb;

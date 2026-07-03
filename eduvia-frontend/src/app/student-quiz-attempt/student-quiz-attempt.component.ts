@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
-import { QuizSummary, StudentService } from '../student.service';
+import { QuizAttempt, QuizSummary, RevisionPlanItem, StudentService } from '../student.service';
 
 @Component({
   selector: 'app-student-quiz-attempt',
@@ -11,6 +11,8 @@ import { QuizSummary, StudentService } from '../student.service';
 export class StudentQuizAttemptComponent implements OnInit {
   quiz: QuizSummary | null = null;
   selectedAnswers: number[] = [];
+  attemptResult: QuizAttempt | null = null;
+  selectedSuggestedQuestion = '';
   isLoading = false;
   isSubmitting = false;
   errorMessage = '';
@@ -65,6 +67,8 @@ export class StudentQuizAttemptComponent implements OnInit {
 
     this.errorMessage = '';
     this.successMessage = '';
+    this.attemptResult = null;
+    this.selectedSuggestedQuestion = '';
     this.isSubmitting = true;
 
     this.studentService
@@ -72,11 +76,16 @@ export class StudentQuizAttemptComponent implements OnInit {
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
         next: (result) => {
+          this.attemptResult = result;
           this.successMessage = `Quiz submitted successfully. Score: ${result.scorePercent}% (${result.correctAnswers}/${result.totalQuestions})`;
         },
         error: () => {
           this.errorMessage = 'Failed to submit quiz attempt. Please try again.';
         },
       });
+  }
+
+  showSuggestedQuestion(item: RevisionPlanItem): void {
+    this.selectedSuggestedQuestion = item.suggestedChatbotQuestion;
   }
 }

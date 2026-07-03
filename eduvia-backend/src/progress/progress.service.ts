@@ -18,6 +18,7 @@ export interface ProgressSummary {
   latestAssessmentAt: Date | null;
   latestQuizAttemptAt: Date | null;
   recommendations: string[];
+  weakTopics: any[];
   lastComputedAt: Date;
 }
 
@@ -134,6 +135,7 @@ export class ProgressService {
       overallScore,
       threshold,
     );
+    const weakTopics = this.extractWeakTopics(quizAttempts);
 
     const latestAssessmentAt = ((assessments[0] as any)?.createdAt as Date | undefined) ?? null;
     const latestQuizAttemptAt = ((quizAttempts[0] as any)?.createdAt as Date | undefined) ?? null;
@@ -154,6 +156,7 @@ export class ProgressService {
           latestAssessmentAt: latestAssessmentAt ?? undefined,
           latestQuizAttemptAt: latestQuizAttemptAt ?? undefined,
           recommendations,
+          weakTopics,
           lastComputedAt,
         },
         { upsert: true, new: true },
@@ -172,6 +175,7 @@ export class ProgressService {
       latestAssessmentAt,
       latestQuizAttemptAt,
       recommendations,
+      weakTopics,
       lastComputedAt,
     };
   }
@@ -239,5 +243,35 @@ export class ProgressService {
     }
 
     return recommendations;
+  }
+
+  private extractWeakTopics(quizAttempts: any[]): any[] {
+    const seen = new Set<string>();
+    const weakTopics: any[] = [];
+
+    for (const attempt of quizAttempts) {
+      const revisionPlan = attempt.revisionPlan || [];
+      for (const item of revisionPlan) {
+        const weakConcept = item?.weakConcept;
+        if (!weakConcept || seen.has(weakConcept)) {
+          continue;
+        }
+        seen.add(weakConcept);
+        weakTopics.push({
+          weakConcept,
+          reason: item.reason,
+          recommendedAction: item.recommendedAction,
+          relatedCourse: item.relatedCourse,
+          relatedPdf: item.relatedPdf,
+          suggestedChatbotQuestion: item.suggestedChatbotQuestion,
+          priority: item.priority,
+        });
+        if (weakTopics.length >= 5) {
+          return weakTopics;
+        }
+      }
+    }
+
+    return weakTopics;
   }
 }

@@ -61,6 +61,15 @@ export class QuizAttempt {
 
   @Prop({ required: true, min: 0, max: 100 })
   scorePercent: number;
+
+  @Prop({ type: [Object], default: [] })
+  incorrectAnswers?: any[];
+
+  @Prop({ type: [String], default: [] })
+  weakTopics?: string[];
+
+  @Prop({ type: [Object], default: [] })
+  revisionPlan?: any[];
 }
 
 export type QuizDocument = Quiz & Document;

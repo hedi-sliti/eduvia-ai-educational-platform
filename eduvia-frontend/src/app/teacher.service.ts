@@ -54,6 +54,16 @@ export interface GeneratedQuizResponse {
   questions: QuizQuestionInput[];
 }
 
+export interface WeakTopicItem {
+  weakConcept: string;
+  reason?: string;
+  recommendedAction?: string;
+  relatedCourse?: string;
+  relatedPdf?: string;
+  suggestedChatbotQuestion?: string;
+  priority?: string;
+}
+
 export interface AtRiskStudentItem {
   student: {
     _id: string;
@@ -67,6 +77,7 @@ export interface AtRiskStudentItem {
     needsAttention: boolean;
     assessmentCount: number;
     quizAttemptsCount: number;
+    weakTopics?: WeakTopicItem[];
   };
 }
 

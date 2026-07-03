@@ -16,6 +16,7 @@ export interface StudentProgress {
   latestAssessmentAt: string | null;
   latestQuizAttemptAt: string | null;
   recommendations: string[];
+  weakTopics?: RevisionPlanItem[];
   lastComputedAt: string;
 }
 
@@ -45,7 +46,30 @@ export interface QuizAttempt {
   correctAnswers: number;
   totalQuestions: number;
   scorePercent: number;
+  incorrectAnswers?: IncorrectAnswerItem[];
+  weakTopics?: string[];
+  revisionPlan?: RevisionPlanItem[];
   createdAt?: string;
+}
+
+export interface IncorrectAnswerItem {
+  questionIndex: number;
+  question: string;
+  selectedOption: number;
+  selectedAnswer: string;
+  correctOption: number;
+  correctAnswer: string;
+  explanation?: string;
+}
+
+export interface RevisionPlanItem {
+  weakConcept: string;
+  reason: string;
+  recommendedAction: string;
+  relatedCourse: string;
+  relatedPdf?: string;
+  suggestedChatbotQuestion: string;
+  priority: string;
 }
 
 export interface ReminderItem {

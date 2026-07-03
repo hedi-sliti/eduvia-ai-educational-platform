@@ -34,5 +34,14 @@
     <ul>
       <li *ngFor="let rec of selectedProgress.recommendations">{{ rec }}</li>
     </ul>
+
+    <h3>Recent Weak Topics</h3>
+    <div *ngIf="!selectedProgress.weakTopics?.length" class="muted">No quiz weakness data yet.</div>
+    <article class="weak-topic" *ngFor="let topic of selectedProgress.weakTopics">
+      <strong>{{ topic.weakConcept }}</strong>
+      <small>{{ topic.priority || 'MEDIUM' }} | {{ topic.relatedCourse || 'Course not specified' }}</small>
+      <p *ngIf="topic.reason">{{ topic.reason }}</p>
+      <p *ngIf="topic.recommendedAction">{{ topic.recommendedAction }}</p>
+    </article>
   </section>
 </section>

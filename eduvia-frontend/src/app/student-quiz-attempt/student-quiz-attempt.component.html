@@ -30,4 +30,44 @@
       {{ isSubmitting ? 'Submitting...' : 'Submit Attempt' }}
     </button>
   </div>
+
+  <section class="quiz-card" *ngIf="attemptResult">
+    <h2>Your Revision Plan</h2>
+    <p>
+      Score: {{ attemptResult.scorePercent }}%
+      ({{ attemptResult.correctAnswers }}/{{ attemptResult.totalQuestions }})
+    </p>
+
+    <div *ngIf="attemptResult.incorrectAnswers?.length; else perfectScore">
+      <h3>Incorrect Answers</h3>
+      <article class="question" *ngFor="let item of attemptResult.incorrectAnswers">
+        <h3>Q{{ item.questionIndex + 1 }}. {{ item.question }}</h3>
+        <p><strong>Your answer:</strong> {{ item.selectedAnswer }}</p>
+        <p><strong>Correct answer:</strong> {{ item.correctAnswer }}</p>
+        <p *ngIf="item.explanation"><strong>Why:</strong> {{ item.explanation }}</p>
+      </article>
+    </div>
+
+    <ng-template #perfectScore>
+      <p class="muted">No weak topics detected from this attempt. Nice work.</p>
+    </ng-template>
+
+    <div *ngIf="attemptResult.revisionPlan?.length">
+      <h3>Weak Topics & Personalized Actions</h3>
+      <article class="revision-item" *ngFor="let item of attemptResult.revisionPlan">
+        <h3>{{ item.weakConcept }} <span>{{ item.priority }}</span></h3>
+        <p><strong>Reason:</strong> {{ item.reason }}</p>
+        <p><strong>Action:</strong> {{ item.recommendedAction }}</p>
+        <p><strong>Course:</strong> {{ item.relatedCourse }}</p>
+        <p *ngIf="item.relatedPdf"><strong>PDF:</strong> {{ item.relatedPdf }}</p>
+        <p><strong>Suggested chatbot question:</strong> {{ item.suggestedChatbotQuestion }}</p>
+        <button type="button" (click)="showSuggestedQuestion(item)">Ask AI about this topic</button>
+      </article>
+    </div>
+
+    <div class="suggestion-box" *ngIf="selectedSuggestedQuestion">
+      <strong>Copy into chatbot:</strong>
+      <p>{{ selectedSuggestedQuestion }}</p>
+    </div>
+  </section>
 </section>
