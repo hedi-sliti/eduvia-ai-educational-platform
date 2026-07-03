@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ChatbotService } from '../chatbot.service';
 import { finalize } from 'rxjs';
+import { CourseItem, TeacherService } from '../teacher.service';
 
 @Component({
   selector: 'app-knowledge',
@@ -9,20 +10,46 @@ import { finalize } from 'rxjs';
 })
 export class KnowledgeComponent implements OnInit {
   documents: any[] = [];
+  courses: CourseItem[] = [];
   isLoading = false;
   isUploading = false;
   isDeleting = false;
+  isLoadingCourses = false;
   errorMessage = '';
   successMessage = '';
   selectedFile: File | null = null;
   title = '';
   level = '';
   subjects = '';
+  selectedCourseId = '';
 
-  constructor(private chatbotService: ChatbotService) {}
+  constructor(
+    private chatbotService: ChatbotService,
+    private teacherService: TeacherService,
+  ) {}
 
   ngOnInit(): void {
+    this.loadCourses();
     this.loadDocuments();
+  }
+
+  get selectedCourseTitle(): string {
+    const selectedCourse = this.courses.find((course) => course._id === this.selectedCourseId);
+    return selectedCourse?.title || '';
+  }
+
+  get groupedDocuments(): Array<{ courseLabel: string; docs: any[] }> {
+    const groups = new Map<string, any[]>();
+    for (const doc of this.documents) {
+      const label = doc?.metadata?.course_title || 'Unassigned Course';
+      const bucket = groups.get(label) || [];
+      bucket.push(doc);
+      groups.set(label, bucket);
+    }
+
+    return Array.from(groups.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([courseLabel, docs]) => ({ courseLabel, docs }));
   }
 
   onFileSelected(event: Event): void {
@@ -37,6 +64,11 @@ export class KnowledgeComponent implements OnInit {
       return;
     }
 
+    if (!this.selectedCourseId) {
+      this.errorMessage = 'Please select a course before uploading.';
+      return;
+    }
+
     const subjects = this.subjects
       .split(',')
       .map((subject) => subject.trim())
@@ -47,7 +79,14 @@ export class KnowledgeComponent implements OnInit {
     this.successMessage = '';
 
     this.chatbotService
-      .uploadPdf(this.selectedFile, this.title, this.level, subjects)
+      .uploadPdf(
+        this.selectedFile,
+        this.title,
+        this.level,
+        subjects,
+        this.selectedCourseId,
+        this.selectedCourseTitle,
+      )
       .pipe(finalize(() => (this.isUploading = false)))
       .subscribe({
         next: () => {
@@ -109,6 +148,25 @@ export class KnowledgeComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private loadCourses(): void {
+    this.isLoadingCourses = true;
+    this.teacherService
+      .getCourses()
+      .pipe(finalize(() => (this.isLoadingCourses = false)))
+      .subscribe({
+        next: (courses) => {
+          this.courses = courses || [];
+          if (this.courses.length && !this.selectedCourseId) {
+            this.selectedCourseId = this.courses[0]._id;
+          }
+        },
+        error: (err) => {
+          console.error('Error loading courses for knowledge upload:', err);
+          this.errorMessage = 'Could not load courses for document upload.';
+        },
+      });
   }
 
   private extractUploadErrorMessage(err: any): string {

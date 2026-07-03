@@ -20,9 +20,9 @@ export class ChatbotService {
     this.pythonAiUrl = baseUrl;
   }
 
-  async sendChatMessage(message: string, studentId?: string, sessionId?: string, level?: string, subjects?: string[]) {
+  async sendChatMessage(message: string, studentId?: string, sessionId?: string, level?: string, subjects?: string[], courseId?: string, courseTitle?: string) {
     try {
-      console.log('Dispatching chat request to Python AI URL:', `${this.pythonAiUrl}/chat/`, { message, student_id: studentId, session_id: sessionId });
+      console.log('Dispatching chat request to Python AI URL:', `${this.pythonAiUrl}/chat/`, { message, student_id: studentId, session_id: sessionId, course_id: courseId });
       const response = await firstValueFrom(
         this.httpService.post(`${this.pythonAiUrl}/chat/`, {
           message,
@@ -30,6 +30,8 @@ export class ChatbotService {
           session_id: sessionId,
           level,
           subjects,
+          course_id: courseId,
+          course_title: courseTitle,
         })
       );
       console.log('Python chat response', response.status, response.data);
@@ -49,7 +51,7 @@ export class ChatbotService {
     }
   }
 
-  async uploadPdf(file: Buffer, filename: string, title?: string, source?: string, level?: string, subjects?: string[]) {
+  async uploadPdf(file: Buffer, filename: string, title?: string, source?: string, level?: string, subjects?: string[], courseId?: string, courseTitle?: string) {
     try {
       const formData = new FormData();
       formData.append('file', file, {
@@ -59,6 +61,8 @@ export class ChatbotService {
       if (title) formData.append('title', title);
       if (source) formData.append('source', source);
       if (level) formData.append('level', level);
+      if (courseId) formData.append('courseId', courseId);
+      if (courseTitle) formData.append('courseTitle', courseTitle);
       const normalizedSubjects = this.normalizeSubjects(subjects);
       if (normalizedSubjects.length > 0) {
         normalizedSubjects.forEach((subject) => {
@@ -104,13 +108,15 @@ export class ChatbotService {
     }
   }
 
-  async chatWithPdfs(message: string, studentId?: string, sessionId?: string) {
+  async chatWithPdfs(message: string, studentId?: string, sessionId?: string, courseId?: string, courseTitle?: string) {
     try {
       const response = await firstValueFrom(
         this.httpService.post(`${this.pythonAiUrl}/pdf/chat`, {
           message,
           student_id: studentId,
           session_id: sessionId,
+          course_id: courseId,
+          course_title: courseTitle,
         })
       );
       return response.data;

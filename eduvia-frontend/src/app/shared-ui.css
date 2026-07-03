@@ -807,3 +807,14 @@ a:focus {
     max-width: 100%;
   }
 }
+
+.course-filter {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.course-filter span {
+  color: var(--eduvia-muted);
+  font-weight: 800;
+  font-size: 0.82rem;
+}

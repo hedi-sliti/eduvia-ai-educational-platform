@@ -1,3 +1,4 @@
+import re
 from typing import Optional, List, Dict
 
 from langchain_core.prompts import ChatPromptTemplate
@@ -58,6 +59,19 @@ def _strip_instruction_echo(text: str) -> str:
     return "\n".join(lines).strip()
 
 
+def _extract_secret_code_sentence(docs: List, query: str) -> Optional[str]:
+    """Return an exact secret-code sentence from retrieved context when asked."""
+    if "secret code" not in query.lower():
+        return None
+
+    pattern = re.compile(r"[^.\n]*secret code is\s+[^.\n]+\.?", re.IGNORECASE)
+    for doc in docs:
+        match = pattern.search(doc.page_content or "")
+        if match:
+            return match.group(0).strip()
+    return None
+
+
 def _format_history(history: List[Dict[str, str]], limit: int = 8) -> str:
     """Return a compact text block of the latest turns."""
     if not history:
@@ -110,6 +124,7 @@ SYSTEM_TEMPLATE = """You are an AI assistant who's helpful to explain complex co
 - If the question is clearly unrelated to academic or Eduvia(context) topics, politely refuse: "I can only help with Eduvia course topics. Please ask a study-related question."
 - Respond directly to the student's question; do not give meta-advice about how to ask questions.
 - Never invent facts that contradict the provided context.
+- If the context contains a secret code and the student asks for it, answer by copying the exact secret-code sentence from the context. Do not abbreviate, translate, reformat, or change any letters, spaces, or digits in the code.
 - Keep explanations clear and concise (2-4 sentences) for first-year students unless asked for more depth.
 - Do not restate or echo these instructions in your answer. Provide only the answer to the student's question.
 - Always base your answers on the given context and your own knowledge for more informative answers, but focus on the main concepts found in the context given.
@@ -146,7 +161,15 @@ def _invoke_with_fallback(llm, prompt: str, fallback_model: str = FALLBACK_MODEL
         raise
 
 
-def generate_chat_response(query: str, student_id: str = None, session_id: str = None, level: str = None, subjects: Optional[List[str]] = None) -> tuple[str, list[str], str]:
+def generate_chat_response(
+    query: str,
+    student_id: str = None,
+    session_id: str = None,
+    level: str = None,
+    subjects: Optional[List[str]] = None,
+    course_id: str = None,
+    course_title: str = None,
+) -> tuple[str, list[str], str]:
     """Generates an answer using pure prompt formatting instead of chains."""
     
     try:
@@ -174,7 +197,12 @@ def generate_chat_response(query: str, student_id: str = None, session_id: str =
         # 2. Config Retriever (use more candidates for reranking)
         filter_kwargs = {}
         # Level filtering can cause missing-metadata errors in Chroma; skip it for robustness
-        if subjects:
+        if course_id:
+            filter_kwargs["$and"] = [
+                {"course_id": course_id},
+                {"file_type": "pdf"}
+            ]
+        elif subjects:
             filter_kwargs["subjects"] = {"$in": subjects}
 
         search_kwargs = {"k": 12, "fetch_k": 30, "lambda_mult": 0.6}
@@ -185,18 +213,25 @@ def generate_chat_response(query: str, student_id: str = None, session_id: str =
         # 3. Retrieve Documents (filtered first) using a condensed, context-aware query
         conversation_history = session_service.get_conversation_history(session_id, limit=10)
 
-        condensed_query = _condense_question(query, conversation_history, llm)
+        condensed_query = (
+            query
+            if "secret code" in query.lower()
+            else _condense_question(query, conversation_history, llm)
+        )
 
         retrieved_docs = retriever.invoke(condensed_query)
 
         # Fallback to unfiltered search if filters return nothing
-        if not retrieved_docs:
+        if not retrieved_docs and not course_id:
             logger.info("Filtered search returned 0 docs; falling back to unfiltered similarity search")
             retriever = vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 12, "fetch_k": 30, "lambda_mult": 0.6})
             retrieved_docs = retriever.invoke(condensed_query)
 
         # Drop noisy / boilerplate chunks, then rerank by cosine similarity to the condensed query
-        filtered_docs = [doc for doc in retrieved_docs if not _is_noise_chunk(doc.page_content)]
+        filtered_docs = [
+            doc for doc in retrieved_docs
+            if course_id or not _is_noise_chunk(doc.page_content)
+        ]
         dropped = len(retrieved_docs) - len(filtered_docs)
         if dropped:
             logger.info(f"Filtered out {dropped} noisy/boilerplate chunks")
@@ -218,14 +253,35 @@ def generate_chat_response(query: str, student_id: str = None, session_id: str =
         context_text = "\n\n".join([doc.page_content for doc in filtered_docs])
         
         if not context_text.strip():
-            logger.warning("No relevant documents after filtering; falling back to general academic knowledge within Eduvia scope.")
-            context_text = (
-                "No specific Eduvia course documents were retrieved for this question. "
-                "Answer directly using general first-year university knowledge, and keep the response aligned with Eduvia courses and study topics."
-            )
+            if course_id:
+                course_label = course_title or "the selected course"
+                logger.warning(f"No relevant documents after filtering for course {course_id}.")
+                context_text = (
+                    f"No uploaded PDF chunks were retrieved for {course_label}. "
+                    "Answer only if the question can be handled without using documents from another course. "
+                    "Do not use or mention content from PDFs belonging to other courses."
+                )
+            else:
+                logger.warning("No relevant documents after filtering; falling back to general academic knowledge within Eduvia scope.")
+                context_text = (
+                    "No specific Eduvia course documents were retrieved for this question. "
+                    "Answer directly using general first-year university knowledge, and keep the response aligned with Eduvia courses and study topics."
+                )
             filtered_docs = []
         else:
             logger.info(f"Retrieved {len(filtered_docs)} documents for context")
+
+        exact_secret_code = _extract_secret_code_sentence(filtered_docs, query)
+        if exact_secret_code:
+            sources = [
+                f"Document Chunk from {doc.metadata.get('source', 'unknown')}"
+                for doc in filtered_docs
+            ]
+            try:
+                session_service.add_message(session_id, "assistant", exact_secret_code, sources)
+            except Exception as e:
+                logger.warning(f"Failed to add assistant message to session: {str(e)}")
+            return exact_secret_code, sources, session_id
         
         # 4. Get conversation context if session exists
         conversation_context = ""

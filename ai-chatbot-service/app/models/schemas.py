@@ -18,6 +18,8 @@ class ChatRequest(BaseModel):
     session_id: Optional[str] = None
     level: Optional[str] = Field(None, description="Education level filter (e.g., '4TWIN')")
     subjects: Optional[List[str]] = Field(None, description="Subject filters to narrow retrieval")
+    course_id: Optional[str] = Field(None, description="Course ID filter for uploaded PDF retrieval")
+    course_title: Optional[str] = Field(None, description="Course title for display/context")
 
 class ChatResponse(BaseModel):
     response: str

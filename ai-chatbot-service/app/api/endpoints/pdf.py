@@ -22,6 +22,8 @@ class ChatRequest(BaseModel):
     student_id: Optional[str] = None
     session_id: Optional[str] = None
     use_pdf_only: Optional[bool] = False
+    course_id: Optional[str] = None
+    course_title: Optional[str] = None
 
 class ChatResponse(BaseModel):
     response: str
@@ -35,6 +37,8 @@ async def upload_pdf(
     source: Optional[str] = Form(None),
     level: Optional[str] = Form(None),
     subjects: Optional[List[str]] = Form(None),
+    course_id: Optional[str] = Form(None, alias="courseId"),
+    course_title: Optional[str] = Form(None, alias="courseTitle"),
     current_user: Dict = Depends(get_current_user)
 ):
     """Upload a PDF file and add it to the knowledge base."""
@@ -59,6 +63,10 @@ async def upload_pdf(
             processed_metadata["level"] = level
         if subjects:
             processed_metadata["subjects"] = subjects
+        if course_id:
+            processed_metadata["course_id"] = course_id
+        if course_title:
+            processed_metadata["course_title"] = course_title
         processed_metadata["status"] = "active"
 
         document_id = pdf_service.process_pdf_file(
@@ -82,7 +90,9 @@ async def upload_pdf(
                     "uploaded_by": current_user.get("user_id", "anonymous"),
                     "original_filename": file.filename,
                     "level": level,
-                    "subjects": subjects or []
+                    "subjects": subjects or [],
+                    "course_id": course_id,
+                    "course_title": course_title
                 },
                 document_id=document_id
             )
@@ -124,7 +134,9 @@ async def chat_with_pdfs(
         response_text, sources = enhanced_chat_service.generate_enhanced_response(
             query=request.message,
             student_id=request.student_id or current_user.get("student_id", "anonymous"),
-            session_id=request.session_id
+            session_id=request.session_id,
+            course_id=request.course_id,
+            course_title=request.course_title
         )
         
         # Count PDF documents used

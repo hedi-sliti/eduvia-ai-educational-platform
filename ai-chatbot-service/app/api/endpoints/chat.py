@@ -30,7 +30,9 @@ async def chat_interaction(request: ChatRequest, current_user: dict = Depends(ge
             student_id=request.student_id or current_user["user_id"],
             session_id=request.session_id,
             level=request.level,
-            subjects=request.subjects
+            subjects=request.subjects,
+            course_id=request.course_id,
+            course_title=request.course_title
         )
         
 

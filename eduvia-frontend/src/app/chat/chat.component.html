@@ -11,6 +11,13 @@
 
     <div class="suggestion-panel">
       <h2>Suggested questions</h2>
+      <label class="course-filter">
+        <span>Course</span>
+        <select [(ngModel)]="selectedCourseId" [disabled]="isLoadingCourses || isLoading">
+          <option value="">All courses</option>
+          <option *ngFor="let course of courses" [value]="course._id">{{ course.title }}</option>
+        </select>
+      </label>
       <div class="suggestion-list">
         <button
           type="button"

@@ -26,11 +26,19 @@ export class ChatbotController {
   @Post('chat')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async chat(@Body() body: { message: string; studentId?: string; sessionId?: string; level?: string; subjects?: string[] }) {
+  async chat(@Body() body: { message: string; studentId?: string; sessionId?: string; level?: string; subjects?: string[]; courseId?: string; courseTitle?: string }) {
     if (!body.message) {
       return { error: 'Message payload is required' };
     }
-    return this.chatbotService.sendChatMessage(body.message, body.studentId, body.sessionId, body.level, body.subjects);
+    return this.chatbotService.sendChatMessage(
+      body.message,
+      body.studentId,
+      body.sessionId,
+      body.level,
+      body.subjects,
+      body.courseId,
+      body.courseTitle,
+    );
   }
 
   @Post('ingest')
@@ -138,7 +146,7 @@ export class ChatbotController {
   @HttpCode(HttpStatus.CREATED)
   async uploadPdf(
     @UploadedFile() file: any,
-    @Body() body: { title?: string; source?: string; level?: string; subjects?: string | string[] }
+    @Body() body: { title?: string; source?: string; level?: string; subjects?: string | string[]; courseId?: string; courseTitle?: string }
   ) {
     if (!file) {
       return { error: 'PDF file is required' };
@@ -150,17 +158,19 @@ export class ChatbotController {
       body.source,
       body.level,
       this.normalizeSubjects(body.subjects),
+      body.courseId,
+      body.courseTitle,
     );
   }
 
   @Post('pdf/chat')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async chatWithPdfs(@Body() body: { message: string; studentId?: string; sessionId?: string }) {
+  async chatWithPdfs(@Body() body: { message: string; studentId?: string; sessionId?: string; courseId?: string; courseTitle?: string }) {
     if (!body.message) {
       return { error: 'Message is required' };
     }
-    return this.chatbotService.chatWithPdfs(body.message, body.studentId, body.sessionId);
+    return this.chatbotService.chatWithPdfs(body.message, body.studentId, body.sessionId, body.courseId, body.courseTitle);
   }
 
   @Get('pdf/documents')

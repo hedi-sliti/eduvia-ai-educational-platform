@@ -20,22 +20,30 @@ class EnhancedChatService:
         self.db_service = DatabaseService()
         self.session_service = SessionService()
     
-    def search_pdf_documents(self, query: str, limit: int = 5) -> List[Document]:
+    def search_pdf_documents(self, query: str, limit: int = 5, course_id: str = None) -> List[Document]:
         """Search for relevant PDF documents based on the query."""
         try:
             logger.info(f"Searching PDF documents for query: {query}")
+            search_filter = {"file_type": "pdf"}
+            if course_id:
+                search_filter = {
+                    "$and": [
+                        {"course_id": course_id},
+                        {"file_type": "pdf"}
+                    ]
+                }
             
             # First, try vector search on all documents (including PDFs)
             vector_results = self.vector_store.similarity_search(
                 query=query,
                 k=limit,
-                filter={"file_type": "pdf"}
+                filter=search_filter
             )
             
             logger.info(f"Found {len(vector_results)} PDF documents via vector search")
             
             # If no vector results, try database text search
-            if not vector_results:
+            if not vector_results and not course_id:
                 with self.db_service as db:
                     db_docs = db.search_documents_by_content(query, limit)
                     vector_results = [
@@ -59,7 +67,7 @@ class EnhancedChatService:
             logger.error(f"Error searching PDF documents: {str(e)}", exc_info=True)
             return []
     
-    def generate_enhanced_response(self, query: str, student_id: str = None, session_id: str = None) -> tuple[str, List[str]]:
+    def generate_enhanced_response(self, query: str, student_id: str = None, session_id: str = None, course_id: str = None, course_title: str = None) -> tuple[str, List[str]]:
         """Generate response using PDF documents and general knowledge."""
         try:
             logger.info(f"Generating enhanced response for student {student_id}, session {session_id}")
@@ -69,10 +77,10 @@ class EnhancedChatService:
                 self.session_service.add_message(session_id, "user", query)
             
             # Search for relevant PDF documents
-            pdf_docs = self.search_pdf_documents(query, limit=3)
+            pdf_docs = self.search_pdf_documents(query, limit=3, course_id=course_id)
             
             # Also search general knowledge base
-            general_docs = self.vector_store.similarity_search(query, k=2)
+            general_docs = [] if course_id else self.vector_store.similarity_search(query, k=2)
             
             # Combine all documents
             all_docs = pdf_docs + general_docs
@@ -89,10 +97,17 @@ class EnhancedChatService:
                     sources.append(doc.metadata.get('title', f'Document {i}'))
             else:
                 # No matches in vector store; let the LLM fall back to general knowledge
-                context_parts.append(
-                    "No Eduvia course documents matched this question. "
-                    "Answer the user's question directly using general first-year university knowledge while keeping the answer within Eduvia course scope."
-                )
+                if course_id:
+                    course_label = course_title or "the selected course"
+                    context_parts.append(
+                        f"No uploaded PDF documents matched this question for {course_label}. "
+                        "Do not use or mention PDF content from other courses."
+                    )
+                else:
+                    context_parts.append(
+                        "No Eduvia course documents matched this question. "
+                        "Answer the user's question directly using general first-year university knowledge while keeping the answer within Eduvia course scope."
+                    )
 
             context = "\n".join(context_parts)
             
